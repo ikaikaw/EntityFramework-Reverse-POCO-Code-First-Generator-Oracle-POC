@@ -6,16 +6,16 @@
     // A course for this generator is available on Pluralsight at https://www.pluralsight.com/courses/code-first-entity-framework-legacy-databases
 
     // Main settings **********************************************************************************************************************
-    Settings.ConnectionStringName = "TestDatabase";   // Searches for this connection string in config files listed below in the ConfigFilenameSearchOrder setting
+    Settings.ConnectionStringName = "MyDbContext";   // Searches for this connection string in config files listed below in the ConfigFilenameSearchOrder setting
     // ConnectionStringName is the only required setting.
     Settings.CommandTimeout = 600; // SQL Command timeout in seconds. 600 is 10 minutes, 0 will wait indefinately. Some databases can be slow retrieving schema information.
     // As an alternative to ConnectionStringName above, which must match your app/web.config connection string name, you can override them below
-    // Settings.ConnectionString = "Data Source=(local);Initial Catalog=Northwind;Integrated Security=True;Application Name=EntityFramework Reverse POCO Generator";
-    // Settings.ProviderName = "System.Data.SqlClient";
+    //Settings.ConnectionString = "Data Source=(local);Initial Catalog=Northwind;Integrated Security=True;Application Name=EntityFramework Reverse POCO Generator";
+    //ProviderName = "System.Data.SqlClient";
 
-    Settings.Namespace = "TestDatabaseStandard"; // Override the default namespace here
-    Settings.DbContextName = "TestDbContext"; // Note: If generating separate files, please give the db context a different name from this tt filename.
-    //Settings.DbContextInterfaceName = "IMyDbContext"; // Defaults to "I" + DbContextName or set string empty to not implement any interface.
+    Settings.Namespace = "TestDatabaseDataAnnotation"; // Override the default namespace here
+    Settings.DbContextName = "TestDatabaseDataAnnotationDbContext"; // Note: If generating separate files, please give the db context a different name from this tt filename.
+    // Settings.DbContextInterfaceName = "IMyDbContext"; // Defaults to "I" + DbContextName or set string empty to not implement any interface.
     Settings.DbContextInterfaceBaseClasses = "System.IDisposable";    // Specify what the base classes are for your database context interface
     Settings.DbContextBaseClass = "System.Data.Entity.DbContext";   // Specify what the base class is for your DbContext. For ASP.NET Identity use "IdentityDbContext<ApplicationUser>"
     //Settings.DefaultConstructorArgument = "EnvironmentConnectionStrings.MyDbContext"; //defaults to "Name=" + ConnectionStringName
@@ -23,20 +23,20 @@
     Settings.FilenameSearchOrder = new[] { "app.config", "web.config" }; // Add more here if required. The config files are searched for in the local project first, then the whole solution second.
     Settings.GenerateSeparateFiles = false;
     Settings.MakeClassesInternal = false;
-    Settings.MakeClassesPartial = false;
-    Settings.MakeDbContextInterfacePartial = false;
+    Settings.MakeClassesPartial = true;
+    Settings.MakeDbContextInterfacePartial = true;
     Settings.UseMappingTables = true; // If true, mapping will be used and no mapping tables will be generated. If false, all tables will be generated.
     Settings.UsePascalCase = true;    // This will rename the generated C# tables & properties to use PascalCase. If false table & property names will be left alone.
-    Settings.UseDataAnnotations = false; // If true, will add data annotations to the poco classes.
+    Settings.UseDataAnnotations = true; // If true, will add data annotations to the poco classes.
     Settings.UsePropertyInitializers = false; // Removes POCO constructor and instead uses C# 6 property initialisers to set defaults
     Settings.UseLazyLoading = true; // Marks all navigation properties as virtual or not, to support or disable EF Lazy Loading feature
     Settings.IncludeComments = CommentsStyle.AtEndOfField; // Adds comments to the generated code
-    Settings.IncludeExtendedPropertyComments = CommentsStyle.AtEndOfField; // Adds extended properties as comments to the generated code
+    Settings.IncludeExtendedPropertyComments = CommentsStyle.None; // Adds extended properties as comments to the generated code
     Settings.IncludeConnectionSettingComments = true; // Add comments describing connection settings used to generate file
     Settings.IncludeViews = true;
     Settings.IncludeSynonyms = false;
     Settings.IncludeStoredProcedures = true;
-    Settings.IncludeTableValuedFunctions = true; // If true, you must set IncludeStoredProcedures = true, and install the "EntityFramework.CodeFirstStoreFunctions" Nuget Package.
+    Settings.IncludeTableValuedFunctions = false; // If true, you must set IncludeStoredProcedures = true, and install the "EntityFramework.CodeFirstStoreFunctions" Nuget Package.
     Settings.DisableGeographyTypes = false; // Turns off use of System.Data.Entity.Spatial.DbGeography and System.Data.Entity.Spatial.DbGeometry as OData doesn't support entities with geometry/geography types.
     //Settings.CollectionInterfaceType = "System.Collections.Generic.List"; // Determines the declaration type of collections for the Navigation Properties. ICollection is used if not set.
     Settings.CollectionType = "System.Collections.Generic.List";  // Determines the type of collection for the Navigation Properties. "ObservableCollection" for example. Add "System.Collections.ObjectModel" to AdditionalNamespaces if setting the CollectionType = "ObservableCollection".
@@ -137,7 +137,7 @@
     // If there are multiple schemas, then the table name is prefixed with the schema, except for dbo.
     // Ie. dbo.hello will be Hello.
     //     abc.hello will be AbcHello.
-    Settings.PrependSchemaName = true;   // Control if the schema name is prepended to the table name
+    Settings.PrependSchemaName = false;   // Control if the schema name is prepended to the table name
 
     // Table Suffix ***********************************************************************************************************************
     // Prepends the suffix to the generated classes names
@@ -162,7 +162,7 @@
     //              TableFilterInclude = new Regex("^table_name1$|^table_name2$|etc");
     //              ColumnFilterExclude = new Regex("^FK_.*$");
     Settings.SchemaFilterExclude = null;
-    Settings.SchemaFilterInclude = null;
+    Settings.SchemaFilterInclude = new Regex("HR|EFPOCO");
     Settings.TableFilterExclude = null;
     Settings.TableFilterInclude = null;
     Settings.ColumnFilterExclude = null;
@@ -228,8 +228,8 @@
     // Column modification*****************************************************************************************************************
     // Use the following list to replace column byte types with Enums.
     // As long as the type can be mapped to your new type, all is well.
-    //EnumDefinitions.Add(new EnumDefinition { Schema = "dbo", Table = "match_table_name", Column = "match_column_name", EnumType = "name_of_enum" });
-    //EnumDefinitions.Add(new EnumDefinition { Schema = "dbo", Table = "OrderHeader", Column = "OrderStatus", EnumType = "OrderStatusType" }); // This will replace OrderHeader.OrderStatus type to be an OrderStatusType enum
+    //Settings.EnumDefinitions.Add(new EnumDefinition { Schema = "dbo", Table = "match_table_name", Column = "match_column_name", EnumType = "name_of_enum" });
+    //Settings.EnumDefinitions.Add(new EnumDefinition { Schema = "dbo", Table = "OrderHeader", Column = "OrderStatus", EnumType = "OrderStatusType" }); // This will replace OrderHeader.OrderStatus type to be an OrderStatusType enum
 
     // Use the following function if you need to apply additional modifications to a column
     // eg. normalise names etc.
@@ -331,8 +331,14 @@
     {
         if (Settings.IncludeExtendedPropertyComments != CommentsStyle.None && !string.IsNullOrEmpty(t.ExtendedProperty))
         {
+            var lines = t.ExtendedProperty
+                .Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                .ToList();
             WriteLine("    ///<summary>");
-            WriteLine("    /// {0}", System.Security.SecurityElement.Escape(t.ExtendedProperty));
+			foreach(var line in lines)
+			{
+				WriteLine("    /// {0}", System.Security.SecurityElement.Escape(line));
+			}
             WriteLine("    ///</summary>");
         }
     };
@@ -517,8 +523,8 @@
     // Read schema
     var factory = GetDbProviderFactory();
     Settings.Tables = LoadTables(factory);
-    Settings.StoredProcs = LoadStoredProcs(factory);
-
+    // Settings.StoredProcs = LoadStoredProcs(factory);
+	Settings.StoredProcs = new List<StoredProcedure>();
     // Generate output
     if (Settings.Tables.Count > 0 || Settings.StoredProcs.Count > 0)
     {
