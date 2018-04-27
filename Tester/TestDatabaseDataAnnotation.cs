@@ -545,6 +545,29 @@ namespace TestDatabaseDataAnnotation
 
     #region POCO classes
 
+    // The table 'BLAH' is not usable by entity framework because it
+    // does not have a primary key. It is listed here for completeness.
+    // BLAH
+    [NotMapped]
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class Blah
+    {
+        [Column(@"I", Order = 1, TypeName = "number")]
+        [Display(Name = "I")]
+        public decimal? I { get; set; } // I
+
+        [Column(@"I2", Order = 2, TypeName = "number")]
+        [Display(Name = "I 2")]
+        public decimal? I2 { get; set; } // I2
+
+        public Blah()
+        {
+            InitializePartial();
+        }
+
+        partial void InitializePartial();
+    }
+
     // COUNTRIES
     [Table("COUNTRIES", Schema = "HR")]
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
@@ -1142,7 +1165,7 @@ namespace TestDatabaseDataAnnotation
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column(@"PK", Order = 1, TypeName = "number")]
-        [Index(@"SYS_C0026050", 1, IsUnique = true, IsClustered = false)]
+        [Index(@"SYS_C0026065", 1, IsUnique = true, IsClustered = false)]
         [Required]
         [Key]
         [Display(Name = "Pk")]
@@ -1204,6 +1227,30 @@ namespace TestDatabaseDataAnnotation
         [Display(Name = "Timestampltzcol 3")]
         public System.DateTime? Timestampltzcol3 { get; set; } // TIMESTAMPLTZCOL3
 
+        [Column(@"INTERVALYEARTOMONTHCOL", Order = 16, TypeName = "interval year(2) to month")]
+        [Display(Name = "Intervalyeartomonthcol")]
+        public string Intervalyeartomonthcol { get; set; } // INTERVALYEARTOMONTHCOL
+
+        [Column(@"INTERVALYEARTOMONTHCOL2", Order = 17, TypeName = "interval year(0) to month")]
+        [Display(Name = "Intervalyeartomonthcol 2")]
+        public string Intervalyeartomonthcol2 { get; set; } // INTERVALYEARTOMONTHCOL2
+
+        [Column(@"INTERVALYEARTOMONTHCOL3", Order = 18, TypeName = "interval year(9) to month")]
+        [Display(Name = "Intervalyeartomonthcol 3")]
+        public string Intervalyeartomonthcol3 { get; set; } // INTERVALYEARTOMONTHCOL3
+
+        [Column(@"INTERVALDAYTOSECCOL", Order = 19, TypeName = "interval day(2) to second(6)")]
+        [Display(Name = "Intervaldaytoseccol")]
+        public string Intervaldaytoseccol { get; set; } // INTERVALDAYTOSECCOL
+
+        [Column(@"INTERVALDAYTOSECCOL2", Order = 20, TypeName = "interval day(0) to second(0)")]
+        [Display(Name = "Intervaldaytoseccol 2")]
+        public string Intervaldaytoseccol2 { get; set; } // INTERVALDAYTOSECCOL2
+
+        [Column(@"INTERVALDAYTOSECCOL3", Order = 21, TypeName = "interval day(9) to second(9)")]
+        [Display(Name = "Intervaldaytoseccol 3")]
+        public string Intervaldaytoseccol3 { get; set; } // INTERVALDAYTOSECCOL3
+
         public TypeDateTable()
         {
             Datedefaultcol = System.DateTime.Now;
@@ -1221,7 +1268,7 @@ namespace TestDatabaseDataAnnotation
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column(@"PK", Order = 1, TypeName = "number")]
-        [Index(@"SYS_C0026054", 1, IsUnique = true, IsClustered = false)]
+        [Index(@"SYS_C0026063", 1, IsUnique = true, IsClustered = false)]
         [Required]
         [Key]
         [Display(Name = "Pk")]
@@ -1263,175 +1310,183 @@ namespace TestDatabaseDataAnnotation
         [Display(Name = "Floatcol")]
         public decimal? Floatcol { get; set; } // FLOATCOL
 
-        [Column(@"INTCOL", Order = 11, TypeName = "number")]
+        [Column(@"BINARYFLOATCOL", Order = 11, TypeName = "binary_float")]
+        [Display(Name = "Binaryfloatcol")]
+        public string Binaryfloatcol { get; set; } // BINARYFLOATCOL
+
+        [Column(@"BINARYDOUBLECOL", Order = 12, TypeName = "binary_double")]
+        [Display(Name = "Binarydoublecol")]
+        public string Binarydoublecol { get; set; } // BINARYDOUBLECOL
+
+        [Column(@"INTCOL", Order = 13, TypeName = "number")]
         [Display(Name = "Intcol")]
         public decimal? Intcol { get; set; } // INTCOL
 
-        [Column(@"INTEGERCOL", Order = 12, TypeName = "number")]
+        [Column(@"INTEGERCOL", Order = 14, TypeName = "number")]
         [Display(Name = "Integercol")]
         public decimal? Integercol { get; set; } // INTEGERCOL
 
-        [Column(@"NUMBERCOL", Order = 13, TypeName = "number")]
+        [Column(@"NUMBERCOL", Order = 15, TypeName = "number")]
         [Display(Name = "Numbercol")]
         public decimal? Numbercol { get; set; } // NUMBERCOL
 
-        [Column(@"NUMBERDEFAULTCOL", Order = 14, TypeName = "number")]
+        [Column(@"NUMBERDEFAULTCOL", Order = 16, TypeName = "number")]
         [Display(Name = "Numberdefaultcol")]
         public decimal? Numberdefaultcol { get; set; } // NUMBERDEFAULTCOL
 
-        [Column(@"NUMBERDEFAULT2COL", Order = 15, TypeName = "number")]
+        [Column(@"NUMBERDEFAULT2COL", Order = 17, TypeName = "number")]
         [Display(Name = "Numberdefault 2 col")]
         public decimal? Numberdefault2Col { get; set; } // NUMBERDEFAULT2COL
 
-        [Column(@"NUMBERDEFAULT3COL", Order = 16, TypeName = "number")]
+        [Column(@"NUMBERDEFAULT3COL", Order = 18, TypeName = "number")]
         [Display(Name = "Numberdefault 3 col")]
         public decimal? Numberdefault3Col { get; set; } // NUMBERDEFAULT3COL
 
-        [Column(@"NUMBERFCOL", Order = 17, TypeName = "number")]
+        [Column(@"NUMBERFCOL", Order = 19, TypeName = "number")]
         [Display(Name = "Numberfcol")]
         public decimal? Numberfcol { get; set; } // NUMBERFCOL
 
-        [Column(@"NUMERICCOL", Order = 18, TypeName = "number")]
+        [Column(@"NUMERICCOL", Order = 20, TypeName = "number")]
         [Display(Name = "Numericcol")]
         public decimal? Numericcol { get; set; } // NUMERICCOL
 
-        [Column(@"NUMERICFCOL", Order = 19, TypeName = "number")]
+        [Column(@"NUMERICFCOL", Order = 21, TypeName = "number")]
         [Display(Name = "Numericfcol")]
         public decimal? Numericfcol { get; set; } // NUMERICFCOL
 
-        [Column(@"REALCOL", Order = 20, TypeName = "float")]
+        [Column(@"REALCOL", Order = 22, TypeName = "float")]
         [Display(Name = "Realcol")]
         public decimal? Realcol { get; set; } // REALCOL
 
-        [Column(@"SMALLINTCOL", Order = 21, TypeName = "number")]
+        [Column(@"SMALLINTCOL", Order = 23, TypeName = "number")]
         [Display(Name = "Smallintcol")]
         public decimal? Smallintcol { get; set; } // SMALLINTCOL
 
-        [Column(@"NUMBER1COL", Order = 22, TypeName = "number")]
+        [Column(@"NUMBER1COL", Order = 24, TypeName = "number")]
         [Display(Name = "Number 1 col")]
         public short? Number1Col { get; set; } // NUMBER1COL
 
-        [Column(@"NUMBER1COL2", Order = 23, TypeName = "number")]
+        [Column(@"NUMBER1COL2", Order = 25, TypeName = "number")]
         [Display(Name = "Number 1 col 2")]
         public short? Number1Col2 { get; set; } // NUMBER1COL2
 
-        [Column(@"NUMBER2COL", Order = 24, TypeName = "number")]
+        [Column(@"NUMBER2COL", Order = 26, TypeName = "number")]
         [Display(Name = "Number 2 col")]
         public short? Number2Col { get; set; } // NUMBER2COL
 
-        [Column(@"NUMBER3COL", Order = 25, TypeName = "number")]
+        [Column(@"NUMBER3COL", Order = 27, TypeName = "number")]
         [Display(Name = "Number 3 col")]
         public short? Number3Col { get; set; } // NUMBER3COL
 
-        [Column(@"NUMBER4COL", Order = 26, TypeName = "number")]
+        [Column(@"NUMBER4COL", Order = 28, TypeName = "number")]
         [Display(Name = "Number 4 col")]
         public short? Number4Col { get; set; } // NUMBER4COL
 
-        [Column(@"NUMBER4COL2", Order = 27, TypeName = "number")]
+        [Column(@"NUMBER4COL2", Order = 29, TypeName = "number")]
         [Display(Name = "Number 4 col 2")]
         public short? Number4Col2 { get; set; } // NUMBER4COL2
 
-        [Column(@"NUMBER5COL", Order = 28, TypeName = "number")]
+        [Column(@"NUMBER5COL", Order = 30, TypeName = "number")]
         [Display(Name = "Number 5 col")]
         public int? Number5Col { get; set; } // NUMBER5COL
 
-        [Column(@"NUMBER5COL2", Order = 29, TypeName = "number")]
+        [Column(@"NUMBER5COL2", Order = 31, TypeName = "number")]
         [Display(Name = "Number 5 col 2")]
         public int? Number5Col2 { get; set; } // NUMBER5COL2
 
-        [Column(@"NUMBER6COL", Order = 30, TypeName = "number")]
+        [Column(@"NUMBER6COL", Order = 32, TypeName = "number")]
         [Display(Name = "Number 6 col")]
         public int? Number6Col { get; set; } // NUMBER6COL
 
-        [Column(@"NUMBER7COL", Order = 31, TypeName = "number")]
+        [Column(@"NUMBER7COL", Order = 33, TypeName = "number")]
         [Display(Name = "Number 7 col")]
         public int? Number7Col { get; set; } // NUMBER7COL
 
-        [Column(@"NUMBER8COL", Order = 32, TypeName = "number")]
+        [Column(@"NUMBER8COL", Order = 34, TypeName = "number")]
         [Display(Name = "Number 8 col")]
         public int? Number8Col { get; set; } // NUMBER8COL
 
-        [Column(@"NUMBER9COL", Order = 33, TypeName = "number")]
+        [Column(@"NUMBER9COL", Order = 35, TypeName = "number")]
         [Display(Name = "Number 9 col")]
         public int? Number9Col { get; set; } // NUMBER9COL
 
-        [Column(@"NUMBER10COL", Order = 34, TypeName = "number")]
+        [Column(@"NUMBER10COL", Order = 36, TypeName = "number")]
         [Display(Name = "Number 10 col")]
         public long? Number10Col { get; set; } // NUMBER10COL
 
-        [Column(@"NUMBER10COL2", Order = 35, TypeName = "number")]
+        [Column(@"NUMBER10COL2", Order = 37, TypeName = "number")]
         [Display(Name = "Number 10 col 2")]
         public long? Number10Col2 { get; set; } // NUMBER10COL2
 
-        [Column(@"NUMBER11COL", Order = 36, TypeName = "number")]
+        [Column(@"NUMBER11COL", Order = 38, TypeName = "number")]
         [Display(Name = "Number 11 col")]
         public long? Number11Col { get; set; } // NUMBER11COL
 
-        [Column(@"NUMBER11COL2", Order = 37, TypeName = "number")]
+        [Column(@"NUMBER11COL2", Order = 39, TypeName = "number")]
         [Display(Name = "Number 11 col 2")]
         public long? Number11Col2 { get; set; } // NUMBER11COL2
 
-        [Column(@"NUMBER12COL", Order = 38, TypeName = "number")]
+        [Column(@"NUMBER12COL", Order = 40, TypeName = "number")]
         [Display(Name = "Number 12 col")]
         public long? Number12Col { get; set; } // NUMBER12COL
 
-        [Column(@"NUMBER13COL", Order = 39, TypeName = "number")]
+        [Column(@"NUMBER13COL", Order = 41, TypeName = "number")]
         [Display(Name = "Number 13 col")]
         public long? Number13Col { get; set; } // NUMBER13COL
 
-        [Column(@"NUMBER14COL", Order = 40, TypeName = "number")]
+        [Column(@"NUMBER14COL", Order = 42, TypeName = "number")]
         [Display(Name = "Number 14 col")]
         public long? Number14Col { get; set; } // NUMBER14COL
 
-        [Column(@"NUMBER15COL", Order = 41, TypeName = "number")]
+        [Column(@"NUMBER15COL", Order = 43, TypeName = "number")]
         [Display(Name = "Number 15 col")]
         public long? Number15Col { get; set; } // NUMBER15COL
 
-        [Column(@"NUMBER16COL", Order = 42, TypeName = "number")]
+        [Column(@"NUMBER16COL", Order = 44, TypeName = "number")]
         [Display(Name = "Number 16 col")]
         public long? Number16Col { get; set; } // NUMBER16COL
 
-        [Column(@"NUMBER17COL", Order = 43, TypeName = "number")]
+        [Column(@"NUMBER17COL", Order = 45, TypeName = "number")]
         [Display(Name = "Number 17 col")]
         public long? Number17Col { get; set; } // NUMBER17COL
 
-        [Column(@"NUMBER18COL", Order = 44, TypeName = "number")]
+        [Column(@"NUMBER18COL", Order = 46, TypeName = "number")]
         [Display(Name = "Number 18 col")]
         public long? Number18Col { get; set; } // NUMBER18COL
 
-        [Column(@"NUMBER19COL", Order = 45, TypeName = "number")]
+        [Column(@"NUMBER19COL", Order = 47, TypeName = "number")]
         [Display(Name = "Number 19 col")]
         public long? Number19Col { get; set; } // NUMBER19COL
 
-        [Column(@"NUMBER19COL2", Order = 46, TypeName = "number")]
+        [Column(@"NUMBER19COL2", Order = 48, TypeName = "number")]
         [Display(Name = "Number 19 col 2")]
         public long? Number19Col2 { get; set; } // NUMBER19COL2
 
-        [Column(@"NUMBER20COL", Order = 47, TypeName = "number")]
+        [Column(@"NUMBER20COL", Order = 49, TypeName = "number")]
         [Display(Name = "Number 20 col")]
         public decimal? Number20Col { get; set; } // NUMBER20COL
 
-        [Column(@"NUMBER20COL2", Order = 48, TypeName = "number")]
+        [Column(@"NUMBER20COL2", Order = 50, TypeName = "number")]
         [Display(Name = "Number 20 col 2")]
         public decimal? Number20Col2 { get; set; } // NUMBER20COL2
 
-        [Column(@"NUMBER21COL", Order = 49, TypeName = "number")]
+        [Column(@"NUMBER21COL", Order = 51, TypeName = "number")]
         [Display(Name = "Number 21 col")]
         public decimal? Number21Col { get; set; } // NUMBER21COL
 
-        [Column(@"NUMBER22COL", Order = 50, TypeName = "number")]
+        [Column(@"NUMBER22COL", Order = 52, TypeName = "number")]
         [Display(Name = "Number 22 col")]
         public decimal? Number22Col { get; set; } // NUMBER22COL
 
-        [Column(@"NUMBER23COL", Order = 51, TypeName = "number")]
+        [Column(@"NUMBER23COL", Order = 53, TypeName = "number")]
         [Display(Name = "Number 23 col")]
         public decimal? Number23Col { get; set; } // NUMBER23COL
 
-        [Column(@"NUMBER24COL", Order = 52, TypeName = "number")]
+        [Column(@"NUMBER24COL", Order = 54, TypeName = "number")]
         [Display(Name = "Number 24 col")]
         public decimal? Number24Col { get; set; } // NUMBER24COL
 
-        [Column(@"NUMBER25COL", Order = 53, TypeName = "number")]
+        [Column(@"NUMBER25COL", Order = 55, TypeName = "number")]
         [Display(Name = "Number 25 col")]
         public decimal? Number25Col { get; set; } // NUMBER25COL
 
@@ -1656,6 +1711,12 @@ namespace TestDatabaseDataAnnotation
             Property(x => x.Timestampltzzcol).IsOptional();
             Property(x => x.Timestampltzcol2).IsOptional();
             Property(x => x.Timestampltzcol3).IsOptional();
+            Property(x => x.Intervalyeartomonthcol).IsOptional();
+            Property(x => x.Intervalyeartomonthcol2).IsOptional();
+            Property(x => x.Intervalyeartomonthcol3).IsOptional();
+            Property(x => x.Intervaldaytoseccol).IsOptional();
+            Property(x => x.Intervaldaytoseccol2).IsOptional();
+            Property(x => x.Intervaldaytoseccol3).IsOptional();
             InitializePartial();
         }
         partial void InitializePartial();
@@ -1681,6 +1742,8 @@ namespace TestDatabaseDataAnnotation
             Property(x => x.Decimalcol2).IsOptional().HasPrecision(38,10);
             Property(x => x.Doubleprecisioncol).IsOptional().HasPrecision(126,0);
             Property(x => x.Floatcol).IsOptional().HasPrecision(126,0);
+            Property(x => x.Binaryfloatcol).IsOptional();
+            Property(x => x.Binarydoublecol).IsOptional();
             Property(x => x.Intcol).IsOptional();
             Property(x => x.Integercol).IsOptional();
             Property(x => x.Numbercol).IsOptional().HasPrecision(38,0);

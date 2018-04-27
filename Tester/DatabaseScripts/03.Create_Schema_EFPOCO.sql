@@ -15,6 +15,8 @@ decimalcol          decimal(38),
 decimalcol2         decimal(38,10),
 doubleprecisioncol  double precision,
 floatcol            float(126),
+binaryfloatcol      binary_float,
+binarydoublecol     binary_double,
 intcol              int,
 integercol          integer,
 numbercol           number(38),
@@ -192,12 +194,12 @@ varchar2defaultcol          varchar2(4000) default 'default_value_for_varchar2',
 varchar2default2col          varchar2(4000) default ('default_value_for_varchar2'),
 varchar2default3col         varchar2(4000) default to_char(sysdate, 'rrrr-mm-dd'),
 varchar2default4col         varchar2(4000) default to_char    (     sysdate, 'rrrr-mm-dd'),
-varchar2default6col         varchar2(4000) default to_char    
+varchar2default5col         varchar2(4000) default to_char    
 (     
 sysdate,
  'rrrr-mm-dd'
 ),
-varchar2default7col         varchar2(4000) default '''should_be_wrapped_in_single_quotes'' - "more text in double quotes" - yet more text',
+varchar2default6col         varchar2(4000) default '''should_be_wrapped_in_single_quotes'' - "more text in double quotes" - yet more text',
 longdefaultcol              long default 'default_value_for_long',
 clobcol                     clob,
 clobdefaultcol              clob default 'default_value_for_clob',
@@ -307,6 +309,7 @@ begin
 end;
 /
 
+-- drop table type_date_table;
 create table type_date_table (
 pk                      number(18) primary key,
 datecol                 date,
@@ -323,15 +326,27 @@ timestamptzcol2         timestamp(0) with time zone,
 timestamptzcol3         timestamp(9) with time zone,
 timestampltzzcol        timestamp with local time zone,
 timestampltzcol2        timestamp(0) with local time zone,
-timestampltzcol3        timestamp(9) with local time zone
+timestampltzcol3        timestamp(9) with local time zone,
+intervalyeartomonthcol  interval year to month,
+intervalyeartomonthcol2 interval year(0) to month,
+intervalyeartomonthcol3 interval year(9) to month,
+intervaldaytoseccol     interval day to second,
+intervaldaytoseccol2    interval day(0) to second(0),
+intervaldaytoseccol3    interval day(9) to second(9)
 );
 
 
 create or replace procedure type_date_proc ( 
-    p_datecol			in date,
-    p_timestampcol		in timestamp,
-	x_datecol			out date,
-    x_timestampcol		out timestamp
+    p_datecol               in date,
+    p_timestampcol          in timestamp,
+    x_datecol               out date,
+    x_timestampcol          out timestamp,
+    p_datedefaultcol        in date default sysdate,
+    p_datedefault2col       in date default to_date('2018-01-01 13:59:59','rrrr-mm-dd hh24:mi:ss'),
+    p_timestampdefaultcol   in timestamp default systimestamp,
+    p_timestampdefault2col  in timestamp default to_timestamp('2018-01-01 13:59:59.123456','rrrr-mm-dd hh24:mi:ss.ff'),
+    p_timestamptzcol        in timestamp with time zone,
+    p_timestampltzzcol      in timestamp with local time zone    
 )
 is 
 begin
