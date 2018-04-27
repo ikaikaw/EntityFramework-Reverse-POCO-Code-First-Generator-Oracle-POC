@@ -1218,6 +1218,8 @@
                 case "long":
                 case "short":
                 case "int":
+				case "double":
+                case "float":
                 case "decimal":
                     if(Default.First() == '\"' && Default.Last() == '\"' && Default.Length > 2)
                         Default = Default.Substring(1, Default.Length - 2);
@@ -1287,6 +1289,22 @@
                         Default = string.Empty;
                     else
                         Default += "m";
+                    break;
+
+				case "float":
+                    float fl;
+                    if (!float.TryParse(Default, out fl))
+                        Default = string.Empty;
+                    else
+                        Default += "f";
+                    break;
+
+				case "double":
+                    double d;
+                    if (!double.TryParse(Default, out d))
+                        Default = string.Empty;
+                    else
+                        Default += "d";
                     break;
 
                 case "string":
@@ -1587,6 +1605,8 @@ c.column_name as ""ColumnName"",
 decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
 c.data_type ,
 case 
+	when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
+    when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
     when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
     when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
     when c.data_type like 'TIMESTAMP%' then 'TIMESTAMP'
@@ -1663,7 +1683,9 @@ nvl(c.column_id, 0) as ""Ordinal"",
 c.column_name as ""ColumnName"",
 decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
 c.data_type ,
-case 
+case
+	when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
+    when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
     when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
     when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
     when c.data_type like 'TIMESTAMP%' then 'TIMESTAMP'
@@ -2714,7 +2736,17 @@ OPTION (QUERYTRACEON 9481)";
 						sysType = "decimal";
 					}
                     break;
+				case "binary_float":
+					sysType = "float";
+					break;
+				case "binary_double":
+					sysType = "double";
+					break;
                 case "float":
+				// https://docs.oracle.com/database/121/ODPNT/entityEDMmapping.htm#CIHDBBBA
+				// EDM types do not support TimeSpan. Use Decimal to represent the total number of seconds. An application can obtain a TimeSpan by using the TimeSpan.FromSeconds static method.
+				case "interval day to second":
+				case "interval year to month":
                     sysType = "decimal";
                     break;
                 case "date":
