@@ -1,9 +1,16 @@
 --
 -- data type tests
 --
+--
+ 
+-- drop table type_num_table;
 create table type_num_table (
+pk                  number(18) primary key,
 deccol              dec(38),
 deccol2             dec(38,10),
+decdefaultcol       dec(38,10) default 10.0,
+decdefault2col       dec(38,10) default (10.0),
+decdefault3col       dec(38,10) default ((10.0)),
 decimalcol          decimal(38),
 decimalcol2         decimal(38,10),
 doubleprecisioncol  double precision,
@@ -12,6 +19,8 @@ intcol              int,
 integercol          integer,
 numbercol           number(38),
 numberdefaultcol    number(38) default 1,
+numberdefault2col   number(38) default to_number('1'),
+numberdefault3col   number(38) default (1 + to_number('1')),
 numberfcol          number,
 numericcol          numeric(38),
 numericfcol         numeric,
@@ -163,7 +172,11 @@ begin
 end;
 /
 
+
+
+--drop table type_char_table;
 create table type_char_table (
+pk                          number(18) primary key,
 charcol                     char(2000),
 charvaryingcol              char varying(4000),
 charactercol                character(2000),
@@ -175,8 +188,19 @@ ncharvaryingcol             nchar varying(2000),
 nvarchar2col                nvarchar2(2000),
 varcharcol                  varchar(4000),
 varchar2col                 varchar2(4000),
---longcol                     long,
+varchar2defaultcol          varchar2(4000) default 'default_value_for_varchar2',
+varchar2default2col          varchar2(4000) default ('default_value_for_varchar2'),
+varchar2default3col         varchar2(4000) default to_char(sysdate, 'rrrr-mm-dd'),
+varchar2default4col         varchar2(4000) default to_char    (     sysdate, 'rrrr-mm-dd'),
+varchar2default6col         varchar2(4000) default to_char    
+(     
+sysdate,
+ 'rrrr-mm-dd'
+),
+varchar2default7col         varchar2(4000) default '''should_be_wrapped_in_single_quotes'' - "more text in double quotes" - yet more text',
+longdefaultcol              long default 'default_value_for_long',
 clobcol                     clob,
+clobdefaultcol              clob default 'default_value_for_clob',
 nclobcol                    nclob
 );
 
@@ -284,8 +308,14 @@ end;
 /
 
 create table type_date_table (
+pk                      number(18) primary key,
 datecol                 date,
+datedefaultcol          date default sysdate,
+datedefault2col         date default to_date('2018-01-01 13:59:59','rrrr-mm-dd hh24:mi:ss'),
+--datedefault3col         date default '2018-01-01 13:59:59', -- this does not work
 timestampcol            timestamp,
+timestampdefaultcol     timestamp default systimestamp,
+timestampdefault2col    timestamp default to_timestamp('2018-01-01 13:59:59.123456','rrrr-mm-dd hh24:mi:ss.ff'),
 timestampcol2           timestamp(0),
 timestampcol3           timestamp(9),
 timestamptzcol          timestamp with time zone,

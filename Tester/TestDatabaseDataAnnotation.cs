@@ -42,6 +42,9 @@ namespace TestDatabaseDataAnnotation
         System.Data.Entity.DbSet<JobHistory> JobHistories { get; set; } // JOB_HISTORY
         System.Data.Entity.DbSet<Location> Locations { get; set; } // LOCATIONS
         System.Data.Entity.DbSet<Region> Regions { get; set; } // REGIONS
+        System.Data.Entity.DbSet<TypeCharTable> TypeCharTables { get; set; } // TYPE_CHAR_TABLE
+        System.Data.Entity.DbSet<TypeDateTable> TypeDateTables { get; set; } // TYPE_DATE_TABLE
+        System.Data.Entity.DbSet<TypeNumTable> TypeNumTables { get; set; } // TYPE_NUM_TABLE
 
         int SaveChanges();
         System.Threading.Tasks.Task<int> SaveChangesAsync();
@@ -71,6 +74,9 @@ namespace TestDatabaseDataAnnotation
         public System.Data.Entity.DbSet<JobHistory> JobHistories { get; set; } // JOB_HISTORY
         public System.Data.Entity.DbSet<Location> Locations { get; set; } // LOCATIONS
         public System.Data.Entity.DbSet<Region> Regions { get; set; } // REGIONS
+        public System.Data.Entity.DbSet<TypeCharTable> TypeCharTables { get; set; } // TYPE_CHAR_TABLE
+        public System.Data.Entity.DbSet<TypeDateTable> TypeDateTables { get; set; } // TYPE_DATE_TABLE
+        public System.Data.Entity.DbSet<TypeNumTable> TypeNumTables { get; set; } // TYPE_NUM_TABLE
 
         static TestDatabaseDataAnnotationDbContext()
         {
@@ -133,6 +139,9 @@ namespace TestDatabaseDataAnnotation
             modelBuilder.Configurations.Add(new JobHistoryConfiguration());
             modelBuilder.Configurations.Add(new LocationConfiguration());
             modelBuilder.Configurations.Add(new RegionConfiguration());
+            modelBuilder.Configurations.Add(new TypeCharTableConfiguration());
+            modelBuilder.Configurations.Add(new TypeDateTableConfiguration());
+            modelBuilder.Configurations.Add(new TypeNumTableConfiguration());
 
             OnModelCreatingPartial(modelBuilder);
         }
@@ -146,6 +155,9 @@ namespace TestDatabaseDataAnnotation
             modelBuilder.Configurations.Add(new JobHistoryConfiguration(schema));
             modelBuilder.Configurations.Add(new LocationConfiguration(schema));
             modelBuilder.Configurations.Add(new RegionConfiguration(schema));
+            modelBuilder.Configurations.Add(new TypeCharTableConfiguration(schema));
+            modelBuilder.Configurations.Add(new TypeDateTableConfiguration(schema));
+            modelBuilder.Configurations.Add(new TypeNumTableConfiguration(schema));
             return modelBuilder;
         }
 
@@ -179,6 +191,9 @@ namespace TestDatabaseDataAnnotation
         public System.Data.Entity.DbSet<JobHistory> JobHistories { get; set; }
         public System.Data.Entity.DbSet<Location> Locations { get; set; }
         public System.Data.Entity.DbSet<Region> Regions { get; set; }
+        public System.Data.Entity.DbSet<TypeCharTable> TypeCharTables { get; set; }
+        public System.Data.Entity.DbSet<TypeDateTable> TypeDateTables { get; set; }
+        public System.Data.Entity.DbSet<TypeNumTable> TypeNumTables { get; set; }
 
         public FakeTestDatabaseDataAnnotationDbContext()
         {
@@ -189,6 +204,9 @@ namespace TestDatabaseDataAnnotation
             JobHistories = new FakeDbSet<JobHistory>("EmployeeId", "StartDate");
             Locations = new FakeDbSet<Location>("LocationId");
             Regions = new FakeDbSet<Region>("RegionId");
+            TypeCharTables = new FakeDbSet<TypeCharTable>("Pk");
+            TypeDateTables = new FakeDbSet<TypeDateTable>("Pk");
+            TypeNumTables = new FakeDbSet<TypeNumTable>("Pk");
 
             InitializePartial();
         }
@@ -978,347 +996,451 @@ namespace TestDatabaseDataAnnotation
         partial void InitializePartial();
     }
 
-    // The table 'TYPE_CHAR_TABLE' is not usable by entity framework because it
-    // does not have a primary key. It is listed here for completeness.
     // TYPE_CHAR_TABLE
-    [NotMapped]
+    [Table("TYPE_CHAR_TABLE", Schema = "EFPOCO")]
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
     public partial class TypeCharTable
     {
-        [Column(@"CHARCOL", Order = 1, TypeName = "char")]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Column(@"PK", Order = 1, TypeName = "number")]
+        [Index(@"SYS_C0026062", 1, IsUnique = true, IsClustered = false)]
+        [Required]
+        [Key]
+        [Display(Name = "Pk")]
+        public long Pk { get; set; } // PK (Primary key)
+
+        [Column(@"CHARCOL", Order = 2, TypeName = "char")]
         [MaxLength(2000)]
         [StringLength(2000)]
         [Display(Name = "Charcol")]
         public string Charcol { get; set; } // CHARCOL (length: 2000)
 
-        [Column(@"CHARVARYINGCOL", Order = 2, TypeName = "varchar2")]
+        [Column(@"CHARVARYINGCOL", Order = 3, TypeName = "varchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Charvaryingcol")]
         public string Charvaryingcol { get; set; } // CHARVARYINGCOL (length: 4000)
 
-        [Column(@"CHARACTERCOL", Order = 3, TypeName = "char")]
+        [Column(@"CHARACTERCOL", Order = 4, TypeName = "char")]
         [MaxLength(2000)]
         [StringLength(2000)]
         [Display(Name = "Charactercol")]
         public string Charactercol { get; set; } // CHARACTERCOL (length: 2000)
 
-        [Column(@"CHARACTERVARYINGCOL", Order = 4, TypeName = "varchar2")]
+        [Column(@"CHARACTERVARYINGCOL", Order = 5, TypeName = "varchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Charactervaryingcol")]
         public string Charactervaryingcol { get; set; } // CHARACTERVARYINGCOL (length: 4000)
 
-        [Column(@"NATIONALCHARVARYING", Order = 5, TypeName = "nvarchar2")]
+        [Column(@"NATIONALCHARVARYING", Order = 6, TypeName = "nvarchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Nationalcharvarying")]
         public string Nationalcharvarying { get; set; } // NATIONALCHARVARYING (length: 4000)
 
-        [Column(@"NATIONALCHARACTERVARYINGCOL", Order = 6, TypeName = "nvarchar2")]
+        [Column(@"NATIONALCHARACTERVARYINGCOL", Order = 7, TypeName = "nvarchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Nationalcharactervaryingcol")]
         public string Nationalcharactervaryingcol { get; set; } // NATIONALCHARACTERVARYINGCOL (length: 4000)
 
-        [Column(@"NCHARCOL", Order = 7, TypeName = "nchar")]
+        [Column(@"NCHARCOL", Order = 8, TypeName = "nchar")]
         [MaxLength(2000)]
         [StringLength(2000)]
         [Display(Name = "Ncharcol")]
         public string Ncharcol { get; set; } // NCHARCOL (length: 2000)
 
-        [Column(@"NCHARVARYINGCOL", Order = 8, TypeName = "nvarchar2")]
+        [Column(@"NCHARVARYINGCOL", Order = 9, TypeName = "nvarchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Ncharvaryingcol")]
         public string Ncharvaryingcol { get; set; } // NCHARVARYINGCOL (length: 4000)
 
-        [Column(@"NVARCHAR2COL", Order = 9, TypeName = "nvarchar2")]
+        [Column(@"NVARCHAR2COL", Order = 10, TypeName = "nvarchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Nvarchar 2 col")]
         public string Nvarchar2Col { get; set; } // NVARCHAR2COL (length: 4000)
 
-        [Column(@"VARCHARCOL", Order = 10, TypeName = "varchar2")]
+        [Column(@"VARCHARCOL", Order = 11, TypeName = "varchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Varcharcol")]
         public string Varcharcol { get; set; } // VARCHARCOL (length: 4000)
 
-        [Column(@"VARCHAR2COL", Order = 11, TypeName = "varchar2")]
+        [Column(@"VARCHAR2COL", Order = 12, TypeName = "varchar2")]
         [MaxLength(4000)]
         [StringLength(4000)]
         [Display(Name = "Varchar 2 col")]
         public string Varchar2Col { get; set; } // VARCHAR2COL (length: 4000)
 
-        [Column(@"CLOBCOL", Order = 12, TypeName = "clob")]
+        [Column(@"VARCHAR2DEFAULTCOL", Order = 13, TypeName = "varchar2")]
+        [MaxLength(4000)]
+        [StringLength(4000)]
+        [Display(Name = "Varchar 2 defaultcol")]
+        public string Varchar2Defaultcol { get; set; } // VARCHAR2DEFAULTCOL (length: 4000)
+
+        [Column(@"VARCHAR2DEFAULT2COL", Order = 14, TypeName = "varchar2")]
+        [MaxLength(4000)]
+        [StringLength(4000)]
+        [Display(Name = "Varchar 2 default 2 col")]
+        public string Varchar2Default2Col { get; set; } // VARCHAR2DEFAULT2COL (length: 4000)
+
+        [Column(@"VARCHAR2DEFAULT3COL", Order = 15, TypeName = "varchar2")]
+        [MaxLength(4000)]
+        [StringLength(4000)]
+        [Display(Name = "Varchar 2 default 3 col")]
+        public string Varchar2Default3Col { get; set; } // VARCHAR2DEFAULT3COL (length: 4000)
+
+        [Column(@"VARCHAR2DEFAULT4COL", Order = 16, TypeName = "varchar2")]
+        [MaxLength(4000)]
+        [StringLength(4000)]
+        [Display(Name = "Varchar 2 default 4 col")]
+        public string Varchar2Default4Col { get; set; } // VARCHAR2DEFAULT4COL (length: 4000)
+
+        [Column(@"VARCHAR2DEFAULT5COL", Order = 17, TypeName = "varchar2")]
+        [MaxLength(4000)]
+        [StringLength(4000)]
+        [Display(Name = "Varchar 2 default 5 col")]
+        public string Varchar2Default5Col { get; set; } // VARCHAR2DEFAULT5COL (length: 4000)
+
+        [Column(@"VARCHAR2DEFAULT6COL", Order = 18, TypeName = "varchar2")]
+        [MaxLength(4000)]
+        [StringLength(4000)]
+        [Display(Name = "Varchar 2 default 6 col")]
+        public string Varchar2Default6Col { get; set; } // VARCHAR2DEFAULT6COL (length: 4000)
+
+        [Column(@"CLOBCOL", Order = 20, TypeName = "clob")]
         [Display(Name = "Clobcol")]
         public string Clobcol { get; set; } // CLOBCOL
 
-        [Column(@"NCLOBCOL", Order = 13, TypeName = "nclob")]
+        [Column(@"CLOBDEFAULTCOL", Order = 21, TypeName = "clob")]
+        [Display(Name = "Clobdefaultcol")]
+        public string Clobdefaultcol { get; set; } // CLOBDEFAULTCOL
+
+        [Column(@"NCLOBCOL", Order = 22, TypeName = "nclob")]
         [Display(Name = "Nclobcol")]
         public string Nclobcol { get; set; } // NCLOBCOL
 
         public TypeCharTable()
         {
+            Varchar2Defaultcol = "default_value_for_varchar2";
+            Varchar2Default2Col = "default_value_for_varchar2";
+            Varchar2Default6Col = "'should_be_wrapped_in_single_quotes' - \"more text in double quotes\" - yet more text";
+            Clobdefaultcol = "default_value_for_clob";
             InitializePartial();
         }
 
         partial void InitializePartial();
     }
 
-    // The table 'TYPE_DATE_TABLE' is not usable by entity framework because it
-    // does not have a primary key. It is listed here for completeness.
     // TYPE_DATE_TABLE
-    [NotMapped]
+    [Table("TYPE_DATE_TABLE", Schema = "EFPOCO")]
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
     public partial class TypeDateTable
     {
-        [Column(@"DATECOL", Order = 1, TypeName = "date")]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Column(@"PK", Order = 1, TypeName = "number")]
+        [Index(@"SYS_C0026050", 1, IsUnique = true, IsClustered = false)]
+        [Required]
+        [Key]
+        [Display(Name = "Pk")]
+        public long Pk { get; set; } // PK (Primary key)
+
+        [Column(@"DATECOL", Order = 2, TypeName = "date")]
         [Display(Name = "Datecol")]
         public System.DateTime? Datecol { get; set; } // DATECOL
 
-        [Column(@"TIMESTAMPCOL", Order = 2, TypeName = "timestamp")]
+        [Column(@"DATEDEFAULTCOL", Order = 3, TypeName = "date")]
+        [Display(Name = "Datedefaultcol")]
+        public System.DateTime? Datedefaultcol { get; set; } // DATEDEFAULTCOL
+
+        [Column(@"DATEDEFAULT2COL", Order = 4, TypeName = "date")]
+        [Display(Name = "Datedefault 2 col")]
+        public System.DateTime? Datedefault2Col { get; set; } // DATEDEFAULT2COL
+
+        [Column(@"TIMESTAMPCOL", Order = 5, TypeName = "timestamp")]
         [Display(Name = "Timestampcol")]
         public System.DateTime? Timestampcol { get; set; } // TIMESTAMPCOL
 
-        [Column(@"TIMESTAMPCOL2", Order = 3, TypeName = "timestamp")]
+        [Column(@"TIMESTAMPDEFAULTCOL", Order = 6, TypeName = "timestamp")]
+        [Display(Name = "Timestampdefaultcol")]
+        public System.DateTime? Timestampdefaultcol { get; set; } // TIMESTAMPDEFAULTCOL
+
+        [Column(@"TIMESTAMPDEFAULT2COL", Order = 7, TypeName = "timestamp")]
+        [Display(Name = "Timestampdefault 2 col")]
+        public System.DateTime? Timestampdefault2Col { get; set; } // TIMESTAMPDEFAULT2COL
+
+        [Column(@"TIMESTAMPCOL2", Order = 8, TypeName = "timestamp")]
         [Display(Name = "Timestampcol 2")]
         public System.DateTime? Timestampcol2 { get; set; } // TIMESTAMPCOL2
 
-        [Column(@"TIMESTAMPCOL3", Order = 4, TypeName = "timestamp")]
+        [Column(@"TIMESTAMPCOL3", Order = 9, TypeName = "timestamp")]
         [Display(Name = "Timestampcol 3")]
         public System.DateTime? Timestampcol3 { get; set; } // TIMESTAMPCOL3
 
-        [Column(@"TIMESTAMPTZCOL", Order = 5, TypeName = "timestamp with time zone")]
+        [Column(@"TIMESTAMPTZCOL", Order = 10, TypeName = "timestamp with time zone")]
         [Display(Name = "Timestamptzcol")]
         public System.DateTimeOffset? Timestamptzcol { get; set; } // TIMESTAMPTZCOL
 
-        [Column(@"TIMESTAMPTZCOL2", Order = 6, TypeName = "timestamp with time zone")]
+        [Column(@"TIMESTAMPTZCOL2", Order = 11, TypeName = "timestamp with time zone")]
         [Display(Name = "Timestamptzcol 2")]
         public System.DateTimeOffset? Timestamptzcol2 { get; set; } // TIMESTAMPTZCOL2
 
-        [Column(@"TIMESTAMPTZCOL3", Order = 7, TypeName = "timestamp with time zone")]
+        [Column(@"TIMESTAMPTZCOL3", Order = 12, TypeName = "timestamp with time zone")]
         [Display(Name = "Timestamptzcol 3")]
         public System.DateTimeOffset? Timestamptzcol3 { get; set; } // TIMESTAMPTZCOL3
 
-        [Column(@"TIMESTAMPLTZZCOL", Order = 8, TypeName = "timestamp with local time zone")]
+        [Column(@"TIMESTAMPLTZZCOL", Order = 13, TypeName = "timestamp with local time zone")]
         [Display(Name = "Timestampltzzcol")]
         public System.DateTime? Timestampltzzcol { get; set; } // TIMESTAMPLTZZCOL
 
-        [Column(@"TIMESTAMPLTZCOL2", Order = 9, TypeName = "timestamp with local time zone")]
+        [Column(@"TIMESTAMPLTZCOL2", Order = 14, TypeName = "timestamp with local time zone")]
         [Display(Name = "Timestampltzcol 2")]
         public System.DateTime? Timestampltzcol2 { get; set; } // TIMESTAMPLTZCOL2
 
-        [Column(@"TIMESTAMPLTZCOL3", Order = 10, TypeName = "timestamp with local time zone")]
+        [Column(@"TIMESTAMPLTZCOL3", Order = 15, TypeName = "timestamp with local time zone")]
         [Display(Name = "Timestampltzcol 3")]
         public System.DateTime? Timestampltzcol3 { get; set; } // TIMESTAMPLTZCOL3
 
         public TypeDateTable()
         {
+            Datedefaultcol = System.DateTime.Now;
+            Timestampdefaultcol = System.DateTime.Now;
             InitializePartial();
         }
 
         partial void InitializePartial();
     }
 
-    // The table 'TYPE_NUM_TABLE' is not usable by entity framework because it
-    // does not have a primary key. It is listed here for completeness.
     // TYPE_NUM_TABLE
-    [NotMapped]
+    [Table("TYPE_NUM_TABLE", Schema = "EFPOCO")]
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
     public partial class TypeNumTable
     {
-        [Column(@"DECCOL", Order = 1, TypeName = "number")]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Column(@"PK", Order = 1, TypeName = "number")]
+        [Index(@"SYS_C0026054", 1, IsUnique = true, IsClustered = false)]
+        [Required]
+        [Key]
+        [Display(Name = "Pk")]
+        public long Pk { get; set; } // PK (Primary key)
+
+        [Column(@"DECCOL", Order = 2, TypeName = "number")]
         [Display(Name = "Deccol")]
         public decimal? Deccol { get; set; } // DECCOL
 
-        [Column(@"DECCOL2", Order = 2, TypeName = "number")]
+        [Column(@"DECCOL2", Order = 3, TypeName = "number")]
         [Display(Name = "Deccol 2")]
         public decimal? Deccol2 { get; set; } // DECCOL2
 
-        [Column(@"DECIMALCOL", Order = 3, TypeName = "number")]
+        [Column(@"DECDEFAULTCOL", Order = 4, TypeName = "number")]
+        [Display(Name = "Decdefaultcol")]
+        public decimal? Decdefaultcol { get; set; } // DECDEFAULTCOL
+
+        [Column(@"DECDEFAULT2COL", Order = 5, TypeName = "number")]
+        [Display(Name = "Decdefault 2 col")]
+        public decimal? Decdefault2Col { get; set; } // DECDEFAULT2COL
+
+        [Column(@"DECDEFAULT3COL", Order = 6, TypeName = "number")]
+        [Display(Name = "Decdefault 3 col")]
+        public decimal? Decdefault3Col { get; set; } // DECDEFAULT3COL
+
+        [Column(@"DECIMALCOL", Order = 7, TypeName = "number")]
         [Display(Name = "Decimalcol")]
         public decimal? Decimalcol { get; set; } // DECIMALCOL
 
-        [Column(@"DECIMALCOL2", Order = 4, TypeName = "number")]
+        [Column(@"DECIMALCOL2", Order = 8, TypeName = "number")]
         [Display(Name = "Decimalcol 2")]
         public decimal? Decimalcol2 { get; set; } // DECIMALCOL2
 
-        [Column(@"DOUBLEPRECISIONCOL", Order = 5, TypeName = "float")]
+        [Column(@"DOUBLEPRECISIONCOL", Order = 9, TypeName = "float")]
         [Display(Name = "Doubleprecisioncol")]
         public decimal? Doubleprecisioncol { get; set; } // DOUBLEPRECISIONCOL
 
-        [Column(@"FLOATCOL", Order = 6, TypeName = "float")]
+        [Column(@"FLOATCOL", Order = 10, TypeName = "float")]
         [Display(Name = "Floatcol")]
         public decimal? Floatcol { get; set; } // FLOATCOL
 
-        [Column(@"INTCOL", Order = 7, TypeName = "number")]
+        [Column(@"INTCOL", Order = 11, TypeName = "number")]
         [Display(Name = "Intcol")]
         public decimal? Intcol { get; set; } // INTCOL
 
-        [Column(@"INTEGERCOL", Order = 8, TypeName = "number")]
+        [Column(@"INTEGERCOL", Order = 12, TypeName = "number")]
         [Display(Name = "Integercol")]
         public decimal? Integercol { get; set; } // INTEGERCOL
 
-        [Column(@"NUMBERCOL", Order = 9, TypeName = "number")]
+        [Column(@"NUMBERCOL", Order = 13, TypeName = "number")]
         [Display(Name = "Numbercol")]
         public decimal? Numbercol { get; set; } // NUMBERCOL
 
-        [Column(@"NUMBERDEFAULTCOL", Order = 10, TypeName = "number")]
+        [Column(@"NUMBERDEFAULTCOL", Order = 14, TypeName = "number")]
         [Display(Name = "Numberdefaultcol")]
         public decimal? Numberdefaultcol { get; set; } // NUMBERDEFAULTCOL
 
-        [Column(@"NUMBERFCOL", Order = 11, TypeName = "number")]
+        [Column(@"NUMBERDEFAULT2COL", Order = 15, TypeName = "number")]
+        [Display(Name = "Numberdefault 2 col")]
+        public decimal? Numberdefault2Col { get; set; } // NUMBERDEFAULT2COL
+
+        [Column(@"NUMBERDEFAULT3COL", Order = 16, TypeName = "number")]
+        [Display(Name = "Numberdefault 3 col")]
+        public decimal? Numberdefault3Col { get; set; } // NUMBERDEFAULT3COL
+
+        [Column(@"NUMBERFCOL", Order = 17, TypeName = "number")]
         [Display(Name = "Numberfcol")]
         public decimal? Numberfcol { get; set; } // NUMBERFCOL
 
-        [Column(@"NUMERICCOL", Order = 12, TypeName = "number")]
+        [Column(@"NUMERICCOL", Order = 18, TypeName = "number")]
         [Display(Name = "Numericcol")]
         public decimal? Numericcol { get; set; } // NUMERICCOL
 
-        [Column(@"NUMERICFCOL", Order = 13, TypeName = "number")]
+        [Column(@"NUMERICFCOL", Order = 19, TypeName = "number")]
         [Display(Name = "Numericfcol")]
         public decimal? Numericfcol { get; set; } // NUMERICFCOL
 
-        [Column(@"REALCOL", Order = 14, TypeName = "float")]
+        [Column(@"REALCOL", Order = 20, TypeName = "float")]
         [Display(Name = "Realcol")]
         public decimal? Realcol { get; set; } // REALCOL
 
-        [Column(@"SMALLINTCOL", Order = 15, TypeName = "number")]
+        [Column(@"SMALLINTCOL", Order = 21, TypeName = "number")]
         [Display(Name = "Smallintcol")]
         public decimal? Smallintcol { get; set; } // SMALLINTCOL
 
-        [Column(@"NUMBER1COL", Order = 16, TypeName = "number")]
+        [Column(@"NUMBER1COL", Order = 22, TypeName = "number")]
         [Display(Name = "Number 1 col")]
         public short? Number1Col { get; set; } // NUMBER1COL
 
-        [Column(@"NUMBER1COL2", Order = 17, TypeName = "number")]
+        [Column(@"NUMBER1COL2", Order = 23, TypeName = "number")]
         [Display(Name = "Number 1 col 2")]
         public short? Number1Col2 { get; set; } // NUMBER1COL2
 
-        [Column(@"NUMBER2COL", Order = 18, TypeName = "number")]
+        [Column(@"NUMBER2COL", Order = 24, TypeName = "number")]
         [Display(Name = "Number 2 col")]
         public short? Number2Col { get; set; } // NUMBER2COL
 
-        [Column(@"NUMBER3COL", Order = 19, TypeName = "number")]
+        [Column(@"NUMBER3COL", Order = 25, TypeName = "number")]
         [Display(Name = "Number 3 col")]
         public short? Number3Col { get; set; } // NUMBER3COL
 
-        [Column(@"NUMBER4COL", Order = 20, TypeName = "number")]
+        [Column(@"NUMBER4COL", Order = 26, TypeName = "number")]
         [Display(Name = "Number 4 col")]
         public short? Number4Col { get; set; } // NUMBER4COL
 
-        [Column(@"NUMBER4COL2", Order = 21, TypeName = "number")]
+        [Column(@"NUMBER4COL2", Order = 27, TypeName = "number")]
         [Display(Name = "Number 4 col 2")]
         public short? Number4Col2 { get; set; } // NUMBER4COL2
 
-        [Column(@"NUMBER5COL", Order = 22, TypeName = "number")]
+        [Column(@"NUMBER5COL", Order = 28, TypeName = "number")]
         [Display(Name = "Number 5 col")]
         public int? Number5Col { get; set; } // NUMBER5COL
 
-        [Column(@"NUMBER5COL2", Order = 23, TypeName = "number")]
+        [Column(@"NUMBER5COL2", Order = 29, TypeName = "number")]
         [Display(Name = "Number 5 col 2")]
         public int? Number5Col2 { get; set; } // NUMBER5COL2
 
-        [Column(@"NUMBER6COL", Order = 24, TypeName = "number")]
+        [Column(@"NUMBER6COL", Order = 30, TypeName = "number")]
         [Display(Name = "Number 6 col")]
         public int? Number6Col { get; set; } // NUMBER6COL
 
-        [Column(@"NUMBER7COL", Order = 25, TypeName = "number")]
+        [Column(@"NUMBER7COL", Order = 31, TypeName = "number")]
         [Display(Name = "Number 7 col")]
         public int? Number7Col { get; set; } // NUMBER7COL
 
-        [Column(@"NUMBER8COL", Order = 26, TypeName = "number")]
+        [Column(@"NUMBER8COL", Order = 32, TypeName = "number")]
         [Display(Name = "Number 8 col")]
         public int? Number8Col { get; set; } // NUMBER8COL
 
-        [Column(@"NUMBER9COL", Order = 27, TypeName = "number")]
+        [Column(@"NUMBER9COL", Order = 33, TypeName = "number")]
         [Display(Name = "Number 9 col")]
         public int? Number9Col { get; set; } // NUMBER9COL
 
-        [Column(@"NUMBER10COL", Order = 28, TypeName = "number")]
+        [Column(@"NUMBER10COL", Order = 34, TypeName = "number")]
         [Display(Name = "Number 10 col")]
         public long? Number10Col { get; set; } // NUMBER10COL
 
-        [Column(@"NUMBER10COL2", Order = 29, TypeName = "number")]
+        [Column(@"NUMBER10COL2", Order = 35, TypeName = "number")]
         [Display(Name = "Number 10 col 2")]
         public long? Number10Col2 { get; set; } // NUMBER10COL2
 
-        [Column(@"NUMBER11COL", Order = 30, TypeName = "number")]
+        [Column(@"NUMBER11COL", Order = 36, TypeName = "number")]
         [Display(Name = "Number 11 col")]
         public long? Number11Col { get; set; } // NUMBER11COL
 
-        [Column(@"NUMBER11COL2", Order = 31, TypeName = "number")]
+        [Column(@"NUMBER11COL2", Order = 37, TypeName = "number")]
         [Display(Name = "Number 11 col 2")]
         public long? Number11Col2 { get; set; } // NUMBER11COL2
 
-        [Column(@"NUMBER12COL", Order = 32, TypeName = "number")]
+        [Column(@"NUMBER12COL", Order = 38, TypeName = "number")]
         [Display(Name = "Number 12 col")]
         public long? Number12Col { get; set; } // NUMBER12COL
 
-        [Column(@"NUMBER13COL", Order = 33, TypeName = "number")]
+        [Column(@"NUMBER13COL", Order = 39, TypeName = "number")]
         [Display(Name = "Number 13 col")]
         public long? Number13Col { get; set; } // NUMBER13COL
 
-        [Column(@"NUMBER14COL", Order = 34, TypeName = "number")]
+        [Column(@"NUMBER14COL", Order = 40, TypeName = "number")]
         [Display(Name = "Number 14 col")]
         public long? Number14Col { get; set; } // NUMBER14COL
 
-        [Column(@"NUMBER15COL", Order = 35, TypeName = "number")]
+        [Column(@"NUMBER15COL", Order = 41, TypeName = "number")]
         [Display(Name = "Number 15 col")]
         public long? Number15Col { get; set; } // NUMBER15COL
 
-        [Column(@"NUMBER16COL", Order = 36, TypeName = "number")]
+        [Column(@"NUMBER16COL", Order = 42, TypeName = "number")]
         [Display(Name = "Number 16 col")]
         public long? Number16Col { get; set; } // NUMBER16COL
 
-        [Column(@"NUMBER17COL", Order = 37, TypeName = "number")]
+        [Column(@"NUMBER17COL", Order = 43, TypeName = "number")]
         [Display(Name = "Number 17 col")]
         public long? Number17Col { get; set; } // NUMBER17COL
 
-        [Column(@"NUMBER18COL", Order = 38, TypeName = "number")]
+        [Column(@"NUMBER18COL", Order = 44, TypeName = "number")]
         [Display(Name = "Number 18 col")]
         public long? Number18Col { get; set; } // NUMBER18COL
 
-        [Column(@"NUMBER19COL", Order = 39, TypeName = "number")]
+        [Column(@"NUMBER19COL", Order = 45, TypeName = "number")]
         [Display(Name = "Number 19 col")]
         public long? Number19Col { get; set; } // NUMBER19COL
 
-        [Column(@"NUMBER19COL2", Order = 40, TypeName = "number")]
+        [Column(@"NUMBER19COL2", Order = 46, TypeName = "number")]
         [Display(Name = "Number 19 col 2")]
         public long? Number19Col2 { get; set; } // NUMBER19COL2
 
-        [Column(@"NUMBER20COL", Order = 41, TypeName = "number")]
+        [Column(@"NUMBER20COL", Order = 47, TypeName = "number")]
         [Display(Name = "Number 20 col")]
         public decimal? Number20Col { get; set; } // NUMBER20COL
 
-        [Column(@"NUMBER20COL2", Order = 42, TypeName = "number")]
+        [Column(@"NUMBER20COL2", Order = 48, TypeName = "number")]
         [Display(Name = "Number 20 col 2")]
         public decimal? Number20Col2 { get; set; } // NUMBER20COL2
 
-        [Column(@"NUMBER21COL", Order = 43, TypeName = "number")]
+        [Column(@"NUMBER21COL", Order = 49, TypeName = "number")]
         [Display(Name = "Number 21 col")]
         public decimal? Number21Col { get; set; } // NUMBER21COL
 
-        [Column(@"NUMBER22COL", Order = 44, TypeName = "number")]
+        [Column(@"NUMBER22COL", Order = 50, TypeName = "number")]
         [Display(Name = "Number 22 col")]
         public decimal? Number22Col { get; set; } // NUMBER22COL
 
-        [Column(@"NUMBER23COL", Order = 45, TypeName = "number")]
+        [Column(@"NUMBER23COL", Order = 51, TypeName = "number")]
         [Display(Name = "Number 23 col")]
         public decimal? Number23Col { get; set; } // NUMBER23COL
 
-        [Column(@"NUMBER24COL", Order = 46, TypeName = "number")]
+        [Column(@"NUMBER24COL", Order = 52, TypeName = "number")]
         [Display(Name = "Number 24 col")]
         public decimal? Number24Col { get; set; } // NUMBER24COL
 
-        [Column(@"NUMBER25COL", Order = 47, TypeName = "number")]
+        [Column(@"NUMBER25COL", Order = 53, TypeName = "number")]
         [Display(Name = "Number 25 col")]
         public decimal? Number25Col { get; set; } // NUMBER25COL
 
         public TypeNumTable()
         {
+            Decdefaultcol = 10.0m;
+            Decdefault2Col = 10.0m;
+            Decdefault3Col = 10.0m;
+            Numberdefaultcol = 1m;
             InitializePartial();
         }
 
@@ -1468,6 +1590,140 @@ namespace TestDatabaseDataAnnotation
         public RegionConfiguration(string schema)
         {
             Property(x => x.RegionName).IsOptional().IsUnicode(false);
+            InitializePartial();
+        }
+        partial void InitializePartial();
+    }
+
+    // TYPE_CHAR_TABLE
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class TypeCharTableConfiguration : System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<TypeCharTable>
+    {
+        public TypeCharTableConfiguration()
+            : this("EFPOCO")
+        {
+        }
+
+        public TypeCharTableConfiguration(string schema)
+        {
+            Property(x => x.Charcol).IsOptional().IsFixedLength().IsUnicode(false);
+            Property(x => x.Charvaryingcol).IsOptional().IsUnicode(false);
+            Property(x => x.Charactercol).IsOptional().IsFixedLength().IsUnicode(false);
+            Property(x => x.Charactervaryingcol).IsOptional().IsUnicode(false);
+            Property(x => x.Nationalcharvarying).IsOptional();
+            Property(x => x.Nationalcharactervaryingcol).IsOptional();
+            Property(x => x.Ncharcol).IsOptional().IsFixedLength();
+            Property(x => x.Ncharvaryingcol).IsOptional();
+            Property(x => x.Nvarchar2Col).IsOptional();
+            Property(x => x.Varcharcol).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Col).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Defaultcol).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Default2Col).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Default3Col).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Default4Col).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Default5Col).IsOptional().IsUnicode(false);
+            Property(x => x.Varchar2Default6Col).IsOptional().IsUnicode(false);
+            Property(x => x.Clobcol).IsOptional();
+            Property(x => x.Clobdefaultcol).IsOptional();
+            Property(x => x.Nclobcol).IsOptional();
+            InitializePartial();
+        }
+        partial void InitializePartial();
+    }
+
+    // TYPE_DATE_TABLE
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class TypeDateTableConfiguration : System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<TypeDateTable>
+    {
+        public TypeDateTableConfiguration()
+            : this("EFPOCO")
+        {
+        }
+
+        public TypeDateTableConfiguration(string schema)
+        {
+            Property(x => x.Datecol).IsOptional();
+            Property(x => x.Datedefaultcol).IsOptional();
+            Property(x => x.Datedefault2Col).IsOptional();
+            Property(x => x.Timestampcol).IsOptional();
+            Property(x => x.Timestampdefaultcol).IsOptional();
+            Property(x => x.Timestampdefault2Col).IsOptional();
+            Property(x => x.Timestampcol2).IsOptional();
+            Property(x => x.Timestampcol3).IsOptional();
+            Property(x => x.Timestamptzcol).IsOptional();
+            Property(x => x.Timestamptzcol2).IsOptional();
+            Property(x => x.Timestamptzcol3).IsOptional();
+            Property(x => x.Timestampltzzcol).IsOptional();
+            Property(x => x.Timestampltzcol2).IsOptional();
+            Property(x => x.Timestampltzcol3).IsOptional();
+            InitializePartial();
+        }
+        partial void InitializePartial();
+    }
+
+    // TYPE_NUM_TABLE
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class TypeNumTableConfiguration : System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<TypeNumTable>
+    {
+        public TypeNumTableConfiguration()
+            : this("EFPOCO")
+        {
+        }
+
+        public TypeNumTableConfiguration(string schema)
+        {
+            Property(x => x.Deccol).IsOptional().HasPrecision(38,0);
+            Property(x => x.Deccol2).IsOptional().HasPrecision(38,10);
+            Property(x => x.Decdefaultcol).IsOptional().HasPrecision(38,10);
+            Property(x => x.Decdefault2Col).IsOptional().HasPrecision(38,10);
+            Property(x => x.Decdefault3Col).IsOptional().HasPrecision(38,10);
+            Property(x => x.Decimalcol).IsOptional().HasPrecision(38,0);
+            Property(x => x.Decimalcol2).IsOptional().HasPrecision(38,10);
+            Property(x => x.Doubleprecisioncol).IsOptional().HasPrecision(126,0);
+            Property(x => x.Floatcol).IsOptional().HasPrecision(126,0);
+            Property(x => x.Intcol).IsOptional();
+            Property(x => x.Integercol).IsOptional();
+            Property(x => x.Numbercol).IsOptional().HasPrecision(38,0);
+            Property(x => x.Numberdefaultcol).IsOptional().HasPrecision(38,0);
+            Property(x => x.Numberdefault2Col).IsOptional().HasPrecision(38,0);
+            Property(x => x.Numberdefault3Col).IsOptional().HasPrecision(38,0);
+            Property(x => x.Numberfcol).IsOptional();
+            Property(x => x.Numericcol).IsOptional().HasPrecision(38,0);
+            Property(x => x.Numericfcol).IsOptional();
+            Property(x => x.Realcol).IsOptional().HasPrecision(63,0);
+            Property(x => x.Smallintcol).IsOptional();
+            Property(x => x.Number1Col).IsOptional();
+            Property(x => x.Number1Col2).IsOptional();
+            Property(x => x.Number2Col).IsOptional();
+            Property(x => x.Number3Col).IsOptional();
+            Property(x => x.Number4Col).IsOptional();
+            Property(x => x.Number4Col2).IsOptional();
+            Property(x => x.Number5Col).IsOptional();
+            Property(x => x.Number5Col2).IsOptional();
+            Property(x => x.Number6Col).IsOptional();
+            Property(x => x.Number7Col).IsOptional();
+            Property(x => x.Number8Col).IsOptional();
+            Property(x => x.Number9Col).IsOptional();
+            Property(x => x.Number10Col).IsOptional();
+            Property(x => x.Number10Col2).IsOptional();
+            Property(x => x.Number11Col).IsOptional();
+            Property(x => x.Number11Col2).IsOptional();
+            Property(x => x.Number12Col).IsOptional();
+            Property(x => x.Number13Col).IsOptional();
+            Property(x => x.Number14Col).IsOptional();
+            Property(x => x.Number15Col).IsOptional();
+            Property(x => x.Number16Col).IsOptional();
+            Property(x => x.Number17Col).IsOptional();
+            Property(x => x.Number18Col).IsOptional();
+            Property(x => x.Number19Col).IsOptional();
+            Property(x => x.Number19Col2).IsOptional();
+            Property(x => x.Number20Col).IsOptional().HasPrecision(20,0);
+            Property(x => x.Number20Col2).IsOptional().HasPrecision(20,0);
+            Property(x => x.Number21Col).IsOptional().HasPrecision(21,0);
+            Property(x => x.Number22Col).IsOptional().HasPrecision(22,0);
+            Property(x => x.Number23Col).IsOptional().HasPrecision(23,0);
+            Property(x => x.Number24Col).IsOptional().HasPrecision(24,0);
+            Property(x => x.Number25Col).IsOptional().HasPrecision(25,0);
             InitializePartial();
         }
         partial void InitializePartial();

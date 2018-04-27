@@ -175,6 +175,43 @@
         "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong",
         "unchecked", "unsafe", "ushort", "using", "virtual", "volatile", "void", "while"
     };
+
+	// Obtained from Oracle docs at: https://docs.oracle.com/database/121/SQLRF/functions002.htm#SQLRF51178
+	static readonly List<string> OracleBuiltInSingleRowFunctions = new List<string>
+    {
+        "abs", "acos", "asin", "atan", "atan2", "bitand", "ceil", "cos", "cosh", "exp", "floor",
+		"ln", "log", "mod", "nanvl", "power", "remainder", "round", "sign", "sin", "sinh", "sqrt",
+		"tan", "tanh", "trunc", "width_bucket", "chr", "concat", "initcap", "lower", "lpad", 
+		"ltrim", "nchr", "nls_initcap", "nls_lower", "nls_upper", "nlssort", "regexp_replace",
+		"regexp_substr", "replace", "rpad", "rtrim", "soundex", "substr", "translate", "trim",
+		"upper", "ascii", "instr", "length", "regexp_count", "regexp_instr", "nls_charset_decl_len",
+		"nls_charset_id", "nls_charset_name", "add_months", "current_date", "current_timestamp", 
+		"dbtimezone", "extract", "from_tz", "last_day", "localtimestamp", "months_between",
+		"new_time", "next_day", "numtodsinterval", "numtoyminterval", "ora_dst_affected", 
+		"ora_dst_convert", "ora_dst_error", "sessiontimezone", "sys_extract_utc", "sysdate",
+		"systimestamp", "to_char", "to_dsinterval", "to_timestamp", "to_timestamp_tz",
+		"to_yminterval", "tz_offset", "greatest", "least", "asciistr", "bin_to_num", "cast", 
+		"chartorowid", "compose", "convert", "decompose", "hextoraw", "rawtohex", "rawtonhex", 
+		"rowidtochar", "rowidtonchar", "scn_to_timestamp", "timestamp_to_scn", "to_binary_double",
+		"to_binary_float", "to_blob", "to_clob", "to_date", "to_lob", "to_multi_byte", "to_nchar",
+		"to_nclob", "to_number", "to_single_byte", "treat", "unistr", "bfilename",
+		"empty_blob,empty_clob", "cardinality", "collect", "powermultiset",
+		"powermultiset_by_cardinality", "set", "sys_connect_by_path", "cluster_details",
+		"cluster_distance", "cluster_id", "cluster_probability", "cluster_set", "feature_details",
+		"feature_id", "feature_set", "feature_value", "prediction", "prediction_bounds",
+		"prediction_cost", "prediction_details", "prediction_probability", "prediction_set",
+		"appendchildxml", "deletexml", "depth", "existsnode", "extractvalue", "insertchildxml",
+		"insertchildxmlafter", "insertchildxmlbefore", "insertxmlafter", "insertxmlbefore", "path", 
+		"sys_dburigen", "sys_xmlagg", "sys_xmlgen", "updatexml", "xmlagg", "xmlcast", "xmlcdata",
+		"xmlcolattval", "xmlcomment", "xmlconcat", "xmldiff", "xmlelement", "xmlexists",
+		"xmlforest", "xmlisvalid", "xmlparse", "xmlpatch", "xmlpi", "xmlquery", "xmlroot",
+		"xmlsequence", "xmlserialize", "xmltable", "xmltransform", "json_query", "json_table",
+		"json_value", "decode", "dump", "ora_hash", "standard_hash", "vsize", "coalesce", 
+		"lnnvl", "nullif", "nvl", "nvl2", "con_dbid_to_id", "con_guid_to_id", "con_name_to_id",
+		"con_uid_to_id", "ora_invoking_user", "ora_invoking_userid", "sys_context", "sys_guid", 
+		"sys_typeid", "uid", "user", "userenv"
+    };
+
     private static readonly Regex RxCleanUp = new Regex(@"[^\w\d\s_-]", RegexOptions.Compiled);
 
     private static readonly Func<string, string> CleanUp = (str) =>
@@ -1135,7 +1172,6 @@
             SetupConfig();
         }
 
-		// TODO: NL Validate / Port to Oracle
         public void CleanUpDefault()
         {
             if (string.IsNullOrWhiteSpace(Default))
@@ -1144,18 +1180,23 @@
                 return;
             }
 
-            // Remove outer brackets
+            // Remove outer parenthesis
             while (Default.First() == '(' && Default.Last() == ')' && Default.Length > 2)
             {
                 Default = Default.Substring(1, Default.Length - 2);
             }
 
             // Remove unicode prefix
-            if (IsUnicode && Default.StartsWith("N") && !Default.Equals("NULL", StringComparison.InvariantCultureIgnoreCase))
-                Default = Default.Substring(1, Default.Length - 1);
+			// NL: Not needed for Oracle
+            // if (IsUnicode && Default.StartsWith("N") && !Default.Equals("NULL", StringComparison.InvariantCultureIgnoreCase))
+            //     Default = Default.Substring(1, Default.Length - 1);
 
+			// Remove leading and traling single-quote
             if(Default.First() == '\'' && Default.Last() == '\'' && Default.Length >= 2)
                 Default = string.Format("\"{0}\"", Default.Substring(1, Default.Length - 2));
+
+			// Sanitize single-quote pairs: ''this is text'' to 'this is text'
+			Default = Default.Replace("\'\'", "\'");
 
             string lower = Default.ToLower();
             string lowerPropertyType = PropertyType.ToLower();
@@ -1163,17 +1204,9 @@
             // Cleanup default
             switch(lowerPropertyType)
             {
-                case "bool":
-                    Default = (Default == "0" || lower == "\"false\"" || lower == "false") ? "false" : "true";
-                    break;
-
-                case "string":
-                case "datetime":
-                case "datetime2":
+				// TODO: NL - handle PL/SQL dataypes
+				case "string":
                 case "system.datetime":
-                case "timespan":
-                case "system.timespan":
-                case "datetimeoffset":
                 case "system.datetimeoffset":
                     if(Default.First() != '"')
                         Default = string.Format("\"{0}\"", Default);
@@ -1182,29 +1215,24 @@
                     else
                         Default = string.Format("\"{0}\"", Default.Substring(1, Default.Length - 2).Replace("\"", "\\\"")); // #281 Default values must be escaped if contain double quotes
                     break;
-
                 case "long":
                 case "short":
                 case "int":
-                case "double":
-                case "float":
                 case "decimal":
-                case "byte":
-                case "guid":
-                case "system.guid":
                     if(Default.First() == '\"' && Default.Last() == '\"' && Default.Length > 2)
                         Default = Default.Substring(1, Default.Length - 2);
                     break;
-
-                case "byte[]":
-                case "system.data.entity.spatial.dbgeography":
-                case "system.data.entity.spatial.dbgeometry":
+				case "byte[]":
                     Default = string.Empty;
                     break;
             }
 
             // Ignore defaults we cannot interpret (we would need SQL to C# compiler)
-            if (lower.StartsWith("create default"))
+			// The following regex will match any of the builtin function names followed by an opening parenthsis. For example, it will match the following:
+			// to_char(sysdate)
+			// to_char     (sysdate)
+			// to_char   \n  (sysdate)
+            if (OracleBuiltInSingleRowFunctions.Any(f => System.Text.RegularExpressions.Regex.IsMatch(lower, String.Format(@"{0}\s*\(.*", f))))
             {
                 Default = string.Empty;
                 return;
@@ -1237,45 +1265,20 @@
                         Default = string.Empty;
                     break;
 
-                case "datetime":
-                case "datetime2":
                 case "system.datetime":
                     DateTime dt;
                     if(!DateTime.TryParse(Default, out dt))
-                        Default = (lower.Contains("getdate()") || lower.Contains("sysdatetime")) ? "System.DateTime.Now" : (lower.Contains("getutcdate()") || lower.Contains("sysutcdatetime")) ? "System.DateTime.UtcNow" : string.Empty;
+                        Default = (lower == "sysdate" || lower == "systimestamp") ? "System.DateTime.Now" : string.Empty;
                     else
                         Default = string.Format("System.DateTime.Parse({0})", Default);
                     break;
 
-                case "datetimeoffset":
                 case "system.datetimeoffset":
                     DateTimeOffset dto;
                     if(!DateTimeOffset.TryParse(Default, out dto))
-                        Default = lower.Contains("sysdatetimeoffset") ? "System.DateTimeOffset.Now" : lower.Contains("sysutcdatetime") ? "System.DateTimeOffset.UtcNow" : string.Empty;
+                        Default = lower == "systimestamp" ? "System.DateTimeOffset.Now" : string.Empty;
                     else
                         Default = string.Format("System.DateTimeOffset.Parse({0})", Default);
-                    break;
-
-                case "timespan":
-                case "system.timespan":
-                    TimeSpan ts;
-                    Default = TimeSpan.TryParse(Default, out ts) ? string.Format("System.TimeSpan.Parse({0})", Default) : string.Empty;
-                    break;
-
-                case "double":
-                    double d;
-                    if(!double.TryParse(Default, out d))
-                        Default = string.Empty;
-                    if (Default.ToLowerInvariant().EndsWith("."))
-                        Default += "0";
-                    break;
-
-                case "float":
-                    float f;
-                    if(!float.TryParse(Default, out f))
-                        Default = string.Empty;
-                    if (!Default.ToLowerInvariant().EndsWith("f"))
-                        Default += "f";
                     break;
 
                 case "decimal":
@@ -1286,35 +1289,11 @@
                         Default += "m";
                     break;
 
-                case "byte":
-                    byte b;
-                    if(!byte.TryParse(Default, out b))
-                        Default = string.Empty;
-                    break;
-
-                case "bool":
-                    bool x;
-                    if(!bool.TryParse(Default, out x))
-                        Default = string.Empty;
-                    break;
-
                 case "string":
-                    if (lower.Contains("newid()") || lower.Contains("newsequentialid()"))
-                        Default = "System.Guid.NewGuid().ToString()";
-                    if(lower.StartsWith("space("))
-                        Default = "\"\"";
+                    // if(lower.StartsWith("space("))
+                    //     Default = "\"\"";
                     if(lower == "null")
                         Default = string.Empty;
-                    break;
-
-                case "guid":
-                case "system.guid":
-                    if (lower.Contains("newid()") || lower.Contains("newsequentialid()"))
-                        Default = "System.Guid.NewGuid()";
-                    else if (lower.Contains("null"))
-                        Default = "null";
-                    else
-                        Default = string.Format("System.Guid.Parse(\"{0}\")", Default);
                     break;
             }
         }
@@ -1563,8 +1542,11 @@
         protected SchemaReader(DbConnection connection, DbProviderFactory factory)
         {
             Cmd = factory.CreateCommand();
-            if(Cmd != null)
+            if(Cmd != null) 
+			{
                 Cmd.Connection = connection;
+				((Oracle.ManagedDataAccess.Client.OracleCommand)Cmd).InitialLONGFetchSize = -1; // Necessary to fetch the default values
+			}
         }
 
         public GeneratedTextTransformation Outer;
@@ -1615,9 +1597,9 @@ cast(nvl(case
     else 0
 end, 0) as int) as ""MaxLength"",
 cast(nvl(c.data_precision, 0) as int) as ""Precision"",
-cast(null as varchar2(4000)) as ""Default"",
+c.data_default as ""Default"",
 cast(nvl(case
-    when c.data_type LIKE 'TIMESTAMP%' then c.data_scale     
+    when c.data_type LIKE 'TIMESTAMP%' then c.data_scale
     else 0
 end,0) as int) as ""DateTimePrecision"",
 cast(nvl(case
@@ -1692,7 +1674,7 @@ cast(nvl(case
     else 0
 end, 0) as int) as ""MaxLength"",
 cast(nvl(c.data_precision, 0) as int) as ""Precision"",
-cast(null as varchar2(4000)) as ""Default"",
+c.data_default as ""Default"",
 cast(nvl(case
     when c.data_type LIKE 'TIMESTAMP%' then c.data_scale     
     else 0
