@@ -29,6 +29,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TestDatabaseDataAnnotation
 {
+    using Oracle.ManagedDataAccess.Client;
     using System.Linq;
 
     #region Unit of work
@@ -58,6 +59,23 @@ namespace TestDatabaseDataAnnotation
         System.Data.Entity.DbSet Set(System.Type entityType);
         System.Data.Entity.DbSet<TEntity> Set<TEntity>() where TEntity : class;
         string ToString();
+
+        // Stored Procedures
+        decimal? TestFunc1();
+        decimal? TestFunc2(decimal? pX, decimal? pY);
+        decimal? TestFunc3(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ);
+        decimal? TestFunc4();
+        string TestFunc5();
+        decimal? TestPkgTestFunc3(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ);
+        string TestPkgTestFunc4(int returnValueCharLength);
+        void TestPkgTestProc1(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ);
+        void TestPkgTypeNumProc();
+        void TypeCharProc(string pCharcol, string pCharvaryingvar, string pCharactervar, string pCharactervaryingvar, string pNationalcharvaryvar, string pNationalcharactervaryingvar, string pNcharvar, string pNcharvaryingvar, string pNvarchar2Var, string pStringvar, string pVarcharvar, string pVarchar2Var, string pClobcol, string pNclobcol, out string xCharcol, int xCharcolCharLength, out string xCharvaryingvar, out string xCharactervar, int xCharactervarCharLength, out string xCharactervaryingvar, out string xNationalcharvaryvar, out string xNationalcharactervaryingvar, out string xNcharvar, int xNcharvarCharLength, out string xNcharvaryingvar, out string xNvarchar2Var, out string xStringvar, out string xVarcharvar, out string xVarchar2Var, out string xClobcol, out string xNclobcol);
+        void TypeCharProcInout(ref string pCharcol, int pCharcolCharLength, ref string pCharvaryingvar, ref string pCharactervar, int pCharactervarCharLength, ref string pCharactervaryingvar, ref string pNationalcharvaryvar, ref string pNationalcharactervaryingvar, ref string pNcharvar, int pNcharvarCharLength, ref string pNcharvaryingvar, ref string pNvarchar2Var, ref string pStringvar, ref string pVarcharvar, ref string pVarchar2Var, ref string pClobcol, ref string pNclobcol);
+        void TypeDateProc(System.DateTime? pDatecol, System.DateTime? pTimestampcol, System.DateTime? pDatedefaultcol, System.DateTime? pDatedefault2Col, System.DateTime? pTimestampdefaultcol, System.DateTime? pTimestampdefault2Col, System.DateTimeOffset? pTimestamptzcol, System.DateTime? pTimestampltzzcol, decimal? pIntervalyeartomonthcol, System.TimeSpan? pIntervaldaytoseccol, out System.DateTime? xDatecol, out System.DateTime? xTimestampcol, out System.DateTime? xDatedefaultcol, out System.DateTime? xDatedefault2Col, out System.DateTime? xTimestampdefaultcol, out System.DateTime? xTimestampdefault2Col, out System.DateTimeOffset? xTimestamptzcol, out System.DateTime? xTimestampltzzcol, out decimal? xIntervalyeartomonthcol, out System.TimeSpan? xIntervaldaytoseccol);
+        void TypeDateProcInout(ref System.DateTime? pDatecol, ref System.DateTime? pTimestampcol);
+        void TypeNumProc(decimal? pDecvar, decimal? pDecimalvar, decimal? pDoubleprecisionvar, decimal? pFloatvar, decimal? pIntvar, decimal? pIntegervar, int? pNaturalvar, int? pNaturalnvar, decimal? pNumberfvar, decimal? pNumericvar, int? pPlsvar, int? pBinaryvar, int? pPositivevar, int? pPositivenvar, decimal? pRealvar, int? pSigntypevar, decimal? pSmallintvar, double? pBinarydoublevar, float? pBinaryfloatvar, decimal? pNumber3Col, out decimal? xDecvar, out decimal? xDecimalvar, out decimal? xDoubleprecisionvar, out decimal? xFloatvar, out decimal? xIntvar, out decimal? xIntegervar, out int? xNaturalvar, out int? xNaturalnvar, out decimal? xNumberfvar, out decimal? xNumericvar, out int? xPlsvar, out int? xBinaryvar, out int? xPositivevar, out int? xPositivenvar, out decimal? xRealvar, out int? xSigntypevar, out decimal? xSmallintvar, out double? xBinarydoublevar, out float? xBinaryfloatvar, out decimal? xNumber3Col);
+        void TypeNumProcInout(ref decimal? pDecvar, ref decimal? pDecimalvar, ref decimal? pDoubleprecisionvar, ref decimal? pFloatvar, ref decimal? pIntvar, ref decimal? pIntegervar, ref int? pNaturalvar, ref int? pNaturalnvar, ref decimal? pNumberfvar, ref decimal? pNumericvar, ref int? pPlsvar, ref int? pBinaryvar, ref int? pPositivevar, ref int? pPositivenvar, ref decimal? pRealvar, ref int? pSigntypevar, ref decimal? pSmallintvar, ref double? pBinarydoublevar, ref float? pBinaryfloatvar);
     }
 
     #endregion
@@ -119,15 +137,14 @@ namespace TestDatabaseDataAnnotation
             base.Dispose(disposing);
         }
 
-        public bool IsSqlParameterNull(System.Data.SqlClient.SqlParameter param)
+        public static bool IsSqlParameterNull(Oracle.ManagedDataAccess.Client.OracleParameter param)
         {
-            var sqlValue = param.SqlValue;
-            var nullableValue = sqlValue as System.Data.SqlTypes.INullable;
+            var sqlValue = param.Value;
+            var nullableValue = sqlValue as Oracle.ManagedDataAccess.Types.INullable;
             if (nullableValue != null)
                 return nullableValue.IsNull;
             return (sqlValue == null || sqlValue == System.DBNull.Value);
         }
-
         protected override void OnModelCreating(System.Data.Entity.DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -164,6 +181,1448 @@ namespace TestDatabaseDataAnnotation
         partial void InitializePartial();
         partial void DisposePartial(bool disposing);
         partial void OnModelCreatingPartial(System.Data.Entity.DbModelBuilder modelBuilder);
+
+        // Stored Procedures
+        public decimal? TestFunc1()
+        {
+            decimal? returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.ReturnValue };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_func_1; end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = null;
+                    else
+                        returnValue = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public decimal? TestFunc2(decimal? pX, decimal? pY)
+        {
+            decimal? returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.ReturnValue };
+            var pXParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_X", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pX.GetValueOrDefault() };
+            if (!pX.HasValue)
+                pXParam.Value = System.DBNull.Value;
+
+            var pYParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_Y", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pY.GetValueOrDefault() };
+            if (!pY.HasValue)
+                pYParam.Value = System.DBNull.Value;
+
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_func_2(:P_X, :P_Y); end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam, pXParam, pYParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = null;
+                    else
+                        returnValue = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public decimal? TestFunc3(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ)
+        {
+            decimal? returnValue = null;
+            xZ = null;
+
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.ReturnValue };
+            var pXParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_X", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pX.GetValueOrDefault() };
+            if (!pX.HasValue)
+                pXParam.Value = System.DBNull.Value;
+
+            var pYParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_Y", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pY.GetValueOrDefault() };
+            if (!pY.HasValue)
+                pYParam.Value = System.DBNull.Value;
+
+            var pStrParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_STR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pStr, Size = 32767 };
+            var xZParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_Z", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_func_3(:P_X, :P_Y, :P_STR, :X_Z); end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam, pXParam, pYParam, pStrParam, xZParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = null;
+                    else
+                        returnValue = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) returnValueParam.Value).Value;
+
+                    if (IsSqlParameterNull(pStrParam))
+                        pStr = default(string);
+                    else
+                        pStr = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pStrParam.Value).Value;
+
+                    if (IsSqlParameterNull(xZParam))
+                        xZ = null;
+                    else
+                        xZ = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xZParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public decimal? TestFunc4()
+        {
+            decimal? returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.ReturnValue };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_func_4; end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = null;
+                    else
+                        returnValue = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public string TestFunc5()
+        {
+            string returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.ReturnValue, Size = 32767 };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_func_5; end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = default(string);
+                    else
+                        returnValue = (string) ((Oracle.ManagedDataAccess.Types.OracleString) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public decimal? TestPkgTestFunc3(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ)
+        {
+            decimal? returnValue = null;
+            xZ = null;
+
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.ReturnValue };
+            var pXParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_X", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pX.GetValueOrDefault() };
+            if (!pX.HasValue)
+                pXParam.Value = System.DBNull.Value;
+
+            var pYParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_Y", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pY.GetValueOrDefault() };
+            if (!pY.HasValue)
+                pYParam.Value = System.DBNull.Value;
+
+            var pStrParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_STR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pStr, Size = 32767 };
+            var xZParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_Z", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_pkg.test_func_3(:P_X, :P_Y, :P_STR, :X_Z); end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam, pXParam, pYParam, pStrParam, xZParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = null;
+                    else
+                        returnValue = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) returnValueParam.Value).Value;
+
+                    if (IsSqlParameterNull(pStrParam))
+                        pStr = default(string);
+                    else
+                        pStr = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pStrParam.Value).Value;
+
+                    if (IsSqlParameterNull(xZParam))
+                        xZ = null;
+                    else
+                        xZ = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xZParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public string TestPkgTestFunc4(int returnValueCharLength)
+        {
+            string returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.ReturnValue, Size = returnValueCharLength };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.test_pkg.test_func_4; end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = default(string);
+                    else
+                        returnValue = (string) ((Oracle.ManagedDataAccess.Types.OracleString) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TestPkgTestProc1(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ)
+        {
+            xZ = null;
+
+            var pXParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_X", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pX.GetValueOrDefault() };
+            if (!pX.HasValue)
+                pXParam.Value = System.DBNull.Value;
+
+            var pYParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_Y", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pY.GetValueOrDefault() };
+            if (!pY.HasValue)
+                pYParam.Value = System.DBNull.Value;
+
+            var pStrParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_STR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pStr, Size = 32767 };
+            var xZParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_Z", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.test_pkg.test_proc_1(:P_X, :P_Y, :P_STR, :X_Z); end;";
+					cmd.Parameters.AddRange(new[] {pXParam, pYParam, pStrParam, xZParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pStrParam))
+                        pStr = default(string);
+                    else
+                        pStr = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pStrParam.Value).Value;
+
+                    if (IsSqlParameterNull(xZParam))
+                        xZ = null;
+                    else
+                        xZ = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xZParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TestPkgTypeNumProc()
+        {
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.test_pkg.type_num_proc; end;";
+					
+
+					cmd.ExecuteNonQuery();
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeCharProc(string pCharcol, string pCharvaryingvar, string pCharactervar, string pCharactervaryingvar, string pNationalcharvaryvar, string pNationalcharactervaryingvar, string pNcharvar, string pNcharvaryingvar, string pNvarchar2Var, string pStringvar, string pVarcharvar, string pVarchar2Var, string pClobcol, string pNclobcol, out string xCharcol, int xCharcolCharLength, out string xCharvaryingvar, out string xCharactervar, int xCharactervarCharLength, out string xCharactervaryingvar, out string xNationalcharvaryvar, out string xNationalcharactervaryingvar, out string xNcharvar, int xNcharvarCharLength, out string xNcharvaryingvar, out string xNvarchar2Var, out string xStringvar, out string xVarcharvar, out string xVarchar2Var, out string xClobcol, out string xNclobcol)
+        {
+            xCharcol = null;
+            xCharvaryingvar = null;
+            xCharactervar = null;
+            xCharactervaryingvar = null;
+            xNationalcharvaryvar = null;
+            xNationalcharactervaryingvar = null;
+            xNcharvar = null;
+            xNcharvaryingvar = null;
+            xNvarchar2Var = null;
+            xStringvar = null;
+            xVarcharvar = null;
+            xVarchar2Var = null;
+            xClobcol = null;
+            xNclobcol = null;
+
+            var pCharcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARCOL", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.Input, Value = pCharcol, Size = pCharcol.Length };
+            if (pCharcolParam.Value == null)
+                pCharcolParam.Value = System.DBNull.Value;
+
+            var pCharvaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARVARYINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pCharvaryingvar, Size = pCharvaryingvar.Length };
+            if (pCharvaryingvarParam.Value == null)
+                pCharvaryingvarParam.Value = System.DBNull.Value;
+
+            var pCharactervarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARACTERVAR", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.Input, Value = pCharactervar, Size = pCharactervar.Length };
+            if (pCharactervarParam.Value == null)
+                pCharactervarParam.Value = System.DBNull.Value;
+
+            var pCharactervaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARACTERVARYINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pCharactervaryingvar, Size = pCharactervaryingvar.Length };
+            if (pCharactervaryingvarParam.Value == null)
+                pCharactervaryingvarParam.Value = System.DBNull.Value;
+
+            var pNationalcharvaryvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATIONALCHARVARYVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Input, Value = pNationalcharvaryvar, Size = pNationalcharvaryvar.Length };
+            if (pNationalcharvaryvarParam.Value == null)
+                pNationalcharvaryvarParam.Value = System.DBNull.Value;
+
+            var pNationalcharactervaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATIONALCHARACTERVARYINGVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Input, Value = pNationalcharactervaryingvar, Size = pNationalcharactervaryingvar.Length };
+            if (pNationalcharactervaryingvarParam.Value == null)
+                pNationalcharactervaryingvarParam.Value = System.DBNull.Value;
+
+            var pNcharvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCHARVAR", OracleDbType = OracleDbType.NChar, Direction = System.Data.ParameterDirection.Input, Value = pNcharvar, Size = pNcharvar.Length };
+            if (pNcharvarParam.Value == null)
+                pNcharvarParam.Value = System.DBNull.Value;
+
+            var pNcharvaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCHARVARYINGVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Input, Value = pNcharvaryingvar, Size = pNcharvaryingvar.Length };
+            if (pNcharvaryingvarParam.Value == null)
+                pNcharvaryingvarParam.Value = System.DBNull.Value;
+
+            var pNvarchar2VarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NVARCHAR2VAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Input, Value = pNvarchar2Var, Size = pNvarchar2Var.Length };
+            if (pNvarchar2VarParam.Value == null)
+                pNvarchar2VarParam.Value = System.DBNull.Value;
+
+            var pStringvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_STRINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pStringvar, Size = pStringvar.Length };
+            if (pStringvarParam.Value == null)
+                pStringvarParam.Value = System.DBNull.Value;
+
+            var pVarcharvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_VARCHARVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pVarcharvar, Size = pVarcharvar.Length };
+            if (pVarcharvarParam.Value == null)
+                pVarcharvarParam.Value = System.DBNull.Value;
+
+            var pVarchar2VarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_VARCHAR2VAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pVarchar2Var, Size = pVarchar2Var.Length };
+            if (pVarchar2VarParam.Value == null)
+                pVarchar2VarParam.Value = System.DBNull.Value;
+
+            var pClobcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOBCOL", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.Input, Value = pClobcol };
+            if (pClobcolParam.Value == null)
+                pClobcolParam.Value = System.DBNull.Value;
+
+            var pNclobcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCLOBCOL", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.Input, Value = pNclobcol };
+            if (pNclobcolParam.Value == null)
+                pNclobcolParam.Value = System.DBNull.Value;
+
+            var xCharcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_CHARCOL", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.Output, Size = xCharcolCharLength };
+            var xCharvaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_CHARVARYINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xCharactervarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_CHARACTERVAR", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.Output, Size = xCharactervarCharLength };
+            var xCharactervaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_CHARACTERVARYINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xNationalcharvaryvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NATIONALCHARVARYVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xNationalcharactervaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NATIONALCHARACTERVARYINGVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xNcharvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NCHARVAR", OracleDbType = OracleDbType.NChar, Direction = System.Data.ParameterDirection.Output, Size = xNcharvarCharLength };
+            var xNcharvaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NCHARVARYINGVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xNvarchar2VarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NVARCHAR2VAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xStringvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_STRINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xVarcharvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_VARCHARVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xVarchar2VarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_VARCHAR2VAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output, Size = 32767 };
+            var xClobcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_CLOBCOL", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.Output };
+            var xNclobcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NCLOBCOL", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_char_proc(:P_CHARCOL, :P_CHARVARYINGVAR, :P_CHARACTERVAR, :P_CHARACTERVARYINGVAR, :P_NATIONALCHARVARYVAR, :P_NATIONALCHARACTERVARYINGVAR, :P_NCHARVAR, :P_NCHARVARYINGVAR, :P_NVARCHAR2VAR, :P_STRINGVAR, :P_VARCHARVAR, :P_VARCHAR2VAR, :P_CLOBCOL, :P_NCLOBCOL, :X_CHARCOL, :X_CHARVARYINGVAR, :X_CHARACTERVAR, :X_CHARACTERVARYINGVAR, :X_NATIONALCHARVARYVAR, :X_NATIONALCHARACTERVARYINGVAR, :X_NCHARVAR, :X_NCHARVARYINGVAR, :X_NVARCHAR2VAR, :X_STRINGVAR, :X_VARCHARVAR, :X_VARCHAR2VAR, :X_CLOBCOL, :X_NCLOBCOL); end;";
+					cmd.Parameters.AddRange(new[] {pCharcolParam, pCharvaryingvarParam, pCharactervarParam, pCharactervaryingvarParam, pNationalcharvaryvarParam, pNationalcharactervaryingvarParam, pNcharvarParam, pNcharvaryingvarParam, pNvarchar2VarParam, pStringvarParam, pVarcharvarParam, pVarchar2VarParam, pClobcolParam, pNclobcolParam, xCharcolParam, xCharvaryingvarParam, xCharactervarParam, xCharactervaryingvarParam, xNationalcharvaryvarParam, xNationalcharactervaryingvarParam, xNcharvarParam, xNcharvaryingvarParam, xNvarchar2VarParam, xStringvarParam, xVarcharvarParam, xVarchar2VarParam, xClobcolParam, xNclobcolParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(xCharcolParam))
+                        xCharcol = default(string);
+                    else
+                        xCharcol = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xCharcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xCharvaryingvarParam))
+                        xCharvaryingvar = default(string);
+                    else
+                        xCharvaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xCharvaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xCharactervarParam))
+                        xCharactervar = default(string);
+                    else
+                        xCharactervar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xCharactervarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xCharactervaryingvarParam))
+                        xCharactervaryingvar = default(string);
+                    else
+                        xCharactervaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xCharactervaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNationalcharvaryvarParam))
+                        xNationalcharvaryvar = default(string);
+                    else
+                        xNationalcharvaryvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xNationalcharvaryvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNationalcharactervaryingvarParam))
+                        xNationalcharactervaryingvar = default(string);
+                    else
+                        xNationalcharactervaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xNationalcharactervaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNcharvarParam))
+                        xNcharvar = default(string);
+                    else
+                        xNcharvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xNcharvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNcharvaryingvarParam))
+                        xNcharvaryingvar = default(string);
+                    else
+                        xNcharvaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xNcharvaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNvarchar2VarParam))
+                        xNvarchar2Var = default(string);
+                    else
+                        xNvarchar2Var = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xNvarchar2VarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xStringvarParam))
+                        xStringvar = default(string);
+                    else
+                        xStringvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xStringvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xVarcharvarParam))
+                        xVarcharvar = default(string);
+                    else
+                        xVarcharvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xVarcharvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xVarchar2VarParam))
+                        xVarchar2Var = default(string);
+                    else
+                        xVarchar2Var = (string) ((Oracle.ManagedDataAccess.Types.OracleString) xVarchar2VarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xClobcolParam))
+                        xClobcol = default(string);
+                    else
+                        xClobcol = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) xClobcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNclobcolParam))
+                        xNclobcol = default(string);
+                    else
+                        xNclobcol = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) xNclobcolParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeCharProcInout(ref string pCharcol, int pCharcolCharLength, ref string pCharvaryingvar, ref string pCharactervar, int pCharactervarCharLength, ref string pCharactervaryingvar, ref string pNationalcharvaryvar, ref string pNationalcharactervaryingvar, ref string pNcharvar, int pNcharvarCharLength, ref string pNcharvaryingvar, ref string pNvarchar2Var, ref string pStringvar, ref string pVarcharvar, ref string pVarchar2Var, ref string pClobcol, ref string pNclobcol)
+        {
+            var pCharcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARCOL", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.InputOutput, Value = pCharcol, Size = pCharcolCharLength };
+            var pCharvaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARVARYINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pCharvaryingvar, Size = 32767 };
+            var pCharactervarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARACTERVAR", OracleDbType = OracleDbType.Char, Direction = System.Data.ParameterDirection.InputOutput, Value = pCharactervar, Size = pCharactervarCharLength };
+            var pCharactervaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CHARACTERVARYINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pCharactervaryingvar, Size = 32767 };
+            var pNationalcharvaryvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATIONALCHARVARYVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pNationalcharvaryvar, Size = 32767 };
+            var pNationalcharactervaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATIONALCHARACTERVARYINGVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pNationalcharactervaryingvar, Size = 32767 };
+            var pNcharvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCHARVAR", OracleDbType = OracleDbType.NChar, Direction = System.Data.ParameterDirection.InputOutput, Value = pNcharvar, Size = pNcharvarCharLength };
+            var pNcharvaryingvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCHARVARYINGVAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pNcharvaryingvar, Size = 32767 };
+            var pNvarchar2VarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NVARCHAR2VAR", OracleDbType = OracleDbType.NVarchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pNvarchar2Var, Size = 32767 };
+            var pStringvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_STRINGVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pStringvar, Size = 32767 };
+            var pVarcharvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_VARCHARVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pVarcharvar, Size = 32767 };
+            var pVarchar2VarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_VARCHAR2VAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pVarchar2Var, Size = 32767 };
+            var pClobcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOBCOL", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.InputOutput, Value = pClobcol };
+            var pNclobcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCLOBCOL", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.InputOutput, Value = pNclobcol };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_char_proc_inout(:P_CHARCOL, :P_CHARVARYINGVAR, :P_CHARACTERVAR, :P_CHARACTERVARYINGVAR, :P_NATIONALCHARVARYVAR, :P_NATIONALCHARACTERVARYINGVAR, :P_NCHARVAR, :P_NCHARVARYINGVAR, :P_NVARCHAR2VAR, :P_STRINGVAR, :P_VARCHARVAR, :P_VARCHAR2VAR, :P_CLOBCOL, :P_NCLOBCOL); end;";
+					cmd.Parameters.AddRange(new[] {pCharcolParam, pCharvaryingvarParam, pCharactervarParam, pCharactervaryingvarParam, pNationalcharvaryvarParam, pNationalcharactervaryingvarParam, pNcharvarParam, pNcharvaryingvarParam, pNvarchar2VarParam, pStringvarParam, pVarcharvarParam, pVarchar2VarParam, pClobcolParam, pNclobcolParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pCharcolParam))
+                        pCharcol = default(string);
+                    else
+                        pCharcol = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pCharcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(pCharvaryingvarParam))
+                        pCharvaryingvar = default(string);
+                    else
+                        pCharvaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pCharvaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pCharactervarParam))
+                        pCharactervar = default(string);
+                    else
+                        pCharactervar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pCharactervarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pCharactervaryingvarParam))
+                        pCharactervaryingvar = default(string);
+                    else
+                        pCharactervaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pCharactervaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNationalcharvaryvarParam))
+                        pNationalcharvaryvar = default(string);
+                    else
+                        pNationalcharvaryvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pNationalcharvaryvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNationalcharactervaryingvarParam))
+                        pNationalcharactervaryingvar = default(string);
+                    else
+                        pNationalcharactervaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pNationalcharactervaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNcharvarParam))
+                        pNcharvar = default(string);
+                    else
+                        pNcharvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pNcharvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNcharvaryingvarParam))
+                        pNcharvaryingvar = default(string);
+                    else
+                        pNcharvaryingvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pNcharvaryingvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNvarchar2VarParam))
+                        pNvarchar2Var = default(string);
+                    else
+                        pNvarchar2Var = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pNvarchar2VarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pStringvarParam))
+                        pStringvar = default(string);
+                    else
+                        pStringvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pStringvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pVarcharvarParam))
+                        pVarcharvar = default(string);
+                    else
+                        pVarcharvar = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pVarcharvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pVarchar2VarParam))
+                        pVarchar2Var = default(string);
+                    else
+                        pVarchar2Var = (string) ((Oracle.ManagedDataAccess.Types.OracleString) pVarchar2VarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pClobcolParam))
+                        pClobcol = default(string);
+                    else
+                        pClobcol = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) pClobcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNclobcolParam))
+                        pNclobcol = default(string);
+                    else
+                        pNclobcol = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) pNclobcolParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeDateProc(System.DateTime? pDatecol, System.DateTime? pTimestampcol, System.DateTime? pDatedefaultcol, System.DateTime? pDatedefault2Col, System.DateTime? pTimestampdefaultcol, System.DateTime? pTimestampdefault2Col, System.DateTimeOffset? pTimestamptzcol, System.DateTime? pTimestampltzzcol, decimal? pIntervalyeartomonthcol, System.TimeSpan? pIntervaldaytoseccol, out System.DateTime? xDatecol, out System.DateTime? xTimestampcol, out System.DateTime? xDatedefaultcol, out System.DateTime? xDatedefault2Col, out System.DateTime? xTimestampdefaultcol, out System.DateTime? xTimestampdefault2Col, out System.DateTimeOffset? xTimestamptzcol, out System.DateTime? xTimestampltzzcol, out decimal? xIntervalyeartomonthcol, out System.TimeSpan? xIntervaldaytoseccol)
+        {
+            xDatecol = null;
+            xTimestampcol = null;
+            xDatedefaultcol = null;
+            xDatedefault2Col = null;
+            xTimestampdefaultcol = null;
+            xTimestampdefault2Col = null;
+            xTimestamptzcol = null;
+            xTimestampltzzcol = null;
+            xIntervalyeartomonthcol = null;
+            xIntervaldaytoseccol = null;
+
+            var pDatecolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DATECOL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.Input, Value = pDatecol.GetValueOrDefault() };
+            if (!pDatecol.HasValue)
+                pDatecolParam.Value = System.DBNull.Value;
+
+            var pTimestampcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_TIMESTAMPCOL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.Input, Value = pTimestampcol.GetValueOrDefault() };
+            if (!pTimestampcol.HasValue)
+                pTimestampcolParam.Value = System.DBNull.Value;
+
+            var pDatedefaultcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DATEDEFAULTCOL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.Input, Value = pDatedefaultcol.GetValueOrDefault() };
+            if (!pDatedefaultcol.HasValue)
+                pDatedefaultcolParam.Value = System.DBNull.Value;
+
+            var pDatedefault2ColParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DATEDEFAULT2COL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.Input, Value = pDatedefault2Col.GetValueOrDefault() };
+            if (!pDatedefault2Col.HasValue)
+                pDatedefault2ColParam.Value = System.DBNull.Value;
+
+            var pTimestampdefaultcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_TIMESTAMPDEFAULTCOL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.Input, Value = pTimestampdefaultcol.GetValueOrDefault() };
+            if (!pTimestampdefaultcol.HasValue)
+                pTimestampdefaultcolParam.Value = System.DBNull.Value;
+
+            var pTimestampdefault2ColParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_TIMESTAMPDEFAULT2COL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.Input, Value = pTimestampdefault2Col.GetValueOrDefault() };
+            if (!pTimestampdefault2Col.HasValue)
+                pTimestampdefault2ColParam.Value = System.DBNull.Value;
+
+            var pTimestamptzcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_TIMESTAMPTZCOL", OracleDbType = OracleDbType.TimeStampTZ, Direction = System.Data.ParameterDirection.Input, Value = pTimestamptzcol.GetValueOrDefault() };
+            if (!pTimestamptzcol.HasValue)
+                pTimestamptzcolParam.Value = System.DBNull.Value;
+
+            var pTimestampltzzcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_TIMESTAMPLTZZCOL", OracleDbType = OracleDbType.TimeStampLTZ, Direction = System.Data.ParameterDirection.Input, Value = pTimestampltzzcol.GetValueOrDefault() };
+            if (!pTimestampltzzcol.HasValue)
+                pTimestampltzzcolParam.Value = System.DBNull.Value;
+
+            var pIntervalyeartomonthcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_INTERVALYEARTOMONTHCOL", OracleDbType = OracleDbType.IntervalYM, Direction = System.Data.ParameterDirection.Input, Value = pIntervalyeartomonthcol.GetValueOrDefault() };
+            if (!pIntervalyeartomonthcol.HasValue)
+                pIntervalyeartomonthcolParam.Value = System.DBNull.Value;
+
+            var pIntervaldaytoseccolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_INTERVALDAYTOSECCOL", OracleDbType = OracleDbType.IntervalDS, Direction = System.Data.ParameterDirection.Input, Value = pIntervaldaytoseccol.GetValueOrDefault() };
+            if (!pIntervaldaytoseccol.HasValue)
+                pIntervaldaytoseccolParam.Value = System.DBNull.Value;
+
+            var xDatecolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_DATECOL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.Output };
+            var xTimestampcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_TIMESTAMPCOL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.Output };
+            var xDatedefaultcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_DATEDEFAULTCOL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.Output };
+            var xDatedefault2ColParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_DATEDEFAULT2COL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.Output };
+            var xTimestampdefaultcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_TIMESTAMPDEFAULTCOL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.Output };
+            var xTimestampdefault2ColParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_TIMESTAMPDEFAULT2COL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.Output };
+            var xTimestamptzcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_TIMESTAMPTZCOL", OracleDbType = OracleDbType.TimeStampTZ, Direction = System.Data.ParameterDirection.Output };
+            var xTimestampltzzcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_TIMESTAMPLTZZCOL", OracleDbType = OracleDbType.TimeStampLTZ, Direction = System.Data.ParameterDirection.Output };
+            var xIntervalyeartomonthcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_INTERVALYEARTOMONTHCOL", OracleDbType = OracleDbType.IntervalYM, Direction = System.Data.ParameterDirection.Output };
+            var xIntervaldaytoseccolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_INTERVALDAYTOSECCOL", OracleDbType = OracleDbType.IntervalDS, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_date_proc(:P_DATECOL, :P_TIMESTAMPCOL, :P_DATEDEFAULTCOL, :P_DATEDEFAULT2COL, :P_TIMESTAMPDEFAULTCOL, :P_TIMESTAMPDEFAULT2COL, :P_TIMESTAMPTZCOL, :P_TIMESTAMPLTZZCOL, :P_INTERVALYEARTOMONTHCOL, :P_INTERVALDAYTOSECCOL, :X_DATECOL, :X_TIMESTAMPCOL, :X_DATEDEFAULTCOL, :X_DATEDEFAULT2COL, :X_TIMESTAMPDEFAULTCOL, :X_TIMESTAMPDEFAULT2COL, :X_TIMESTAMPTZCOL, :X_TIMESTAMPLTZZCOL, :X_INTERVALYEARTOMONTHCOL, :X_INTERVALDAYTOSECCOL); end;";
+					cmd.Parameters.AddRange(new[] {pDatecolParam, pTimestampcolParam, pDatedefaultcolParam, pDatedefault2ColParam, pTimestampdefaultcolParam, pTimestampdefault2ColParam, pTimestamptzcolParam, pTimestampltzzcolParam, pIntervalyeartomonthcolParam, pIntervaldaytoseccolParam, xDatecolParam, xTimestampcolParam, xDatedefaultcolParam, xDatedefault2ColParam, xTimestampdefaultcolParam, xTimestampdefault2ColParam, xTimestamptzcolParam, xTimestampltzzcolParam, xIntervalyeartomonthcolParam, xIntervaldaytoseccolParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(xDatecolParam))
+                        xDatecol = null;
+                    else
+                        xDatecol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleDate) xDatecolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xTimestampcolParam))
+                        xTimestampcol = null;
+                    else
+                        xTimestampcol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleTimeStamp) xTimestampcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xDatedefaultcolParam))
+                        xDatedefaultcol = null;
+                    else
+                        xDatedefaultcol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleDate) xDatedefaultcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xDatedefault2ColParam))
+                        xDatedefault2Col = null;
+                    else
+                        xDatedefault2Col = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleDate) xDatedefault2ColParam.Value).Value;
+
+                    if (IsSqlParameterNull(xTimestampdefaultcolParam))
+                        xTimestampdefaultcol = null;
+                    else
+                        xTimestampdefaultcol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleTimeStamp) xTimestampdefaultcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xTimestampdefault2ColParam))
+                        xTimestampdefault2Col = null;
+                    else
+                        xTimestampdefault2Col = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleTimeStamp) xTimestampdefault2ColParam.Value).Value;
+
+                    if (IsSqlParameterNull(xTimestamptzcolParam))
+                        xTimestamptzcol = null;
+                    else
+                        xTimestamptzcol = (System.DateTimeOffset) ((Oracle.ManagedDataAccess.Types.OracleTimeStampTZ) xTimestamptzcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xTimestampltzzcolParam))
+                        xTimestampltzzcol = null;
+                    else
+                        xTimestampltzzcol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleTimeStampLTZ) xTimestampltzzcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xIntervalyeartomonthcolParam))
+                        xIntervalyeartomonthcol = null;
+                    else
+                        xIntervalyeartomonthcol = (decimal) ((Oracle.ManagedDataAccess.Types.OracleIntervalYM) xIntervalyeartomonthcolParam.Value).Value;
+
+                    if (IsSqlParameterNull(xIntervaldaytoseccolParam))
+                        xIntervaldaytoseccol = null;
+                    else
+                        xIntervaldaytoseccol = (System.TimeSpan) ((Oracle.ManagedDataAccess.Types.OracleIntervalDS) xIntervaldaytoseccolParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeDateProcInout(ref System.DateTime? pDatecol, ref System.DateTime? pTimestampcol)
+        {
+            var pDatecolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DATECOL", OracleDbType = OracleDbType.Date, Direction = System.Data.ParameterDirection.InputOutput, Value = pDatecol.GetValueOrDefault() };
+            var pTimestampcolParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_TIMESTAMPCOL", OracleDbType = OracleDbType.TimeStamp, Direction = System.Data.ParameterDirection.InputOutput, Value = pTimestampcol.GetValueOrDefault() };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_date_proc_inout(:P_DATECOL, :P_TIMESTAMPCOL); end;";
+					cmd.Parameters.AddRange(new[] {pDatecolParam, pTimestampcolParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pDatecolParam))
+                        pDatecol = null;
+                    else
+                        pDatecol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleDate) pDatecolParam.Value).Value;
+
+                    if (IsSqlParameterNull(pTimestampcolParam))
+                        pTimestampcol = null;
+                    else
+                        pTimestampcol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleTimeStamp) pTimestampcolParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeNumProc(decimal? pDecvar, decimal? pDecimalvar, decimal? pDoubleprecisionvar, decimal? pFloatvar, decimal? pIntvar, decimal? pIntegervar, int? pNaturalvar, int? pNaturalnvar, decimal? pNumberfvar, decimal? pNumericvar, int? pPlsvar, int? pBinaryvar, int? pPositivevar, int? pPositivenvar, decimal? pRealvar, int? pSigntypevar, decimal? pSmallintvar, double? pBinarydoublevar, float? pBinaryfloatvar, decimal? pNumber3Col, out decimal? xDecvar, out decimal? xDecimalvar, out decimal? xDoubleprecisionvar, out decimal? xFloatvar, out decimal? xIntvar, out decimal? xIntegervar, out int? xNaturalvar, out int? xNaturalnvar, out decimal? xNumberfvar, out decimal? xNumericvar, out int? xPlsvar, out int? xBinaryvar, out int? xPositivevar, out int? xPositivenvar, out decimal? xRealvar, out int? xSigntypevar, out decimal? xSmallintvar, out double? xBinarydoublevar, out float? xBinaryfloatvar, out decimal? xNumber3Col)
+        {
+            xDecvar = null;
+            xDecimalvar = null;
+            xDoubleprecisionvar = null;
+            xFloatvar = null;
+            xIntvar = null;
+            xIntegervar = null;
+            xNaturalvar = null;
+            xNaturalnvar = null;
+            xNumberfvar = null;
+            xNumericvar = null;
+            xPlsvar = null;
+            xBinaryvar = null;
+            xPositivevar = null;
+            xPositivenvar = null;
+            xRealvar = null;
+            xSigntypevar = null;
+            xSmallintvar = null;
+            xBinarydoublevar = null;
+            xBinaryfloatvar = null;
+            xNumber3Col = null;
+
+            var pDecvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DECVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pDecvar.GetValueOrDefault() };
+            if (!pDecvar.HasValue)
+                pDecvarParam.Value = System.DBNull.Value;
+
+            var pDecimalvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DECIMALVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pDecimalvar.GetValueOrDefault() };
+            if (!pDecimalvar.HasValue)
+                pDecimalvarParam.Value = System.DBNull.Value;
+
+            var pDoubleprecisionvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DOUBLEPRECISIONVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pDoubleprecisionvar.GetValueOrDefault() };
+            if (!pDoubleprecisionvar.HasValue)
+                pDoubleprecisionvarParam.Value = System.DBNull.Value;
+
+            var pFloatvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_FLOATVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pFloatvar.GetValueOrDefault() };
+            if (!pFloatvar.HasValue)
+                pFloatvarParam.Value = System.DBNull.Value;
+
+            var pIntvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_INTVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pIntvar.GetValueOrDefault() };
+            if (!pIntvar.HasValue)
+                pIntvarParam.Value = System.DBNull.Value;
+
+            var pIntegervarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_INTEGERVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pIntegervar.GetValueOrDefault() };
+            if (!pIntegervar.HasValue)
+                pIntegervarParam.Value = System.DBNull.Value;
+
+            var pNaturalvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATURALVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pNaturalvar.GetValueOrDefault() };
+            if (!pNaturalvar.HasValue)
+                pNaturalvarParam.Value = System.DBNull.Value;
+
+            var pNaturalnvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATURALNVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pNaturalnvar.GetValueOrDefault() };
+            if (!pNaturalnvar.HasValue)
+                pNaturalnvarParam.Value = System.DBNull.Value;
+
+            var pNumberfvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NUMBERFVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pNumberfvar.GetValueOrDefault() };
+            if (!pNumberfvar.HasValue)
+                pNumberfvarParam.Value = System.DBNull.Value;
+
+            var pNumericvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NUMERICVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pNumericvar.GetValueOrDefault() };
+            if (!pNumericvar.HasValue)
+                pNumericvarParam.Value = System.DBNull.Value;
+
+            var pPlsvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_PLSVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pPlsvar.GetValueOrDefault() };
+            if (!pPlsvar.HasValue)
+                pPlsvarParam.Value = System.DBNull.Value;
+
+            var pBinaryvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BINARYVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pBinaryvar.GetValueOrDefault() };
+            if (!pBinaryvar.HasValue)
+                pBinaryvarParam.Value = System.DBNull.Value;
+
+            var pPositivevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_POSITIVEVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pPositivevar.GetValueOrDefault() };
+            if (!pPositivevar.HasValue)
+                pPositivevarParam.Value = System.DBNull.Value;
+
+            var pPositivenvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_POSITIVENVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pPositivenvar.GetValueOrDefault() };
+            if (!pPositivenvar.HasValue)
+                pPositivenvarParam.Value = System.DBNull.Value;
+
+            var pRealvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_REALVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Input, Value = pRealvar.GetValueOrDefault() };
+            if (!pRealvar.HasValue)
+                pRealvarParam.Value = System.DBNull.Value;
+
+            var pSigntypevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_SIGNTYPEVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Input, Value = pSigntypevar.GetValueOrDefault() };
+            if (!pSigntypevar.HasValue)
+                pSigntypevarParam.Value = System.DBNull.Value;
+
+            var pSmallintvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_SMALLINTVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pSmallintvar.GetValueOrDefault() };
+            if (!pSmallintvar.HasValue)
+                pSmallintvarParam.Value = System.DBNull.Value;
+
+            var pBinarydoublevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BINARYDOUBLEVAR", OracleDbType = OracleDbType.BinaryDouble, Direction = System.Data.ParameterDirection.Input, Value = pBinarydoublevar.GetValueOrDefault() };
+            if (!pBinarydoublevar.HasValue)
+                pBinarydoublevarParam.Value = System.DBNull.Value;
+
+            var pBinaryfloatvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BINARYFLOATVAR", OracleDbType = OracleDbType.BinaryFloat, Direction = System.Data.ParameterDirection.Input, Value = pBinaryfloatvar.GetValueOrDefault() };
+            if (!pBinaryfloatvar.HasValue)
+                pBinaryfloatvarParam.Value = System.DBNull.Value;
+
+            var pNumber3ColParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NUMBER3COL", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Input, Value = pNumber3Col.GetValueOrDefault() };
+            if (!pNumber3Col.HasValue)
+                pNumber3ColParam.Value = System.DBNull.Value;
+
+            var xDecvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_DECVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xDecimalvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_DECIMALVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xDoubleprecisionvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_DOUBLEPRECISIONVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output };
+            var xFloatvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_FLOATVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output };
+            var xIntvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_INTVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xIntegervarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_INTEGERVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xNaturalvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NATURALVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xNaturalnvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NATURALNVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xNumberfvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NUMBERFVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xNumericvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NUMERICVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xPlsvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_PLSVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xBinaryvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_BINARYVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xPositivevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_POSITIVEVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xPositivenvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_POSITIVENVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xRealvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_REALVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.Output };
+            var xSigntypevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_SIGNTYPEVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.Output };
+            var xSmallintvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_SMALLINTVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+            var xBinarydoublevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_BINARYDOUBLEVAR", OracleDbType = OracleDbType.BinaryDouble, Direction = System.Data.ParameterDirection.Output };
+            var xBinaryfloatvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_BINARYFLOATVAR", OracleDbType = OracleDbType.BinaryFloat, Direction = System.Data.ParameterDirection.Output };
+            var xNumber3ColParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NUMBER3COL", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_num_proc(:P_DECVAR, :P_DECIMALVAR, :P_DOUBLEPRECISIONVAR, :P_FLOATVAR, :P_INTVAR, :P_INTEGERVAR, :P_NATURALVAR, :P_NATURALNVAR, :P_NUMBERFVAR, :P_NUMERICVAR, :P_PLSVAR, :P_BINARYVAR, :P_POSITIVEVAR, :P_POSITIVENVAR, :P_REALVAR, :P_SIGNTYPEVAR, :P_SMALLINTVAR, :P_BINARYDOUBLEVAR, :P_BINARYFLOATVAR, :P_NUMBER3COL, :X_DECVAR, :X_DECIMALVAR, :X_DOUBLEPRECISIONVAR, :X_FLOATVAR, :X_INTVAR, :X_INTEGERVAR, :X_NATURALVAR, :X_NATURALNVAR, :X_NUMBERFVAR, :X_NUMERICVAR, :X_PLSVAR, :X_BINARYVAR, :X_POSITIVEVAR, :X_POSITIVENVAR, :X_REALVAR, :X_SIGNTYPEVAR, :X_SMALLINTVAR, :X_BINARYDOUBLEVAR, :X_BINARYFLOATVAR, :X_NUMBER3COL); end;";
+					cmd.Parameters.AddRange(new[] {pDecvarParam, pDecimalvarParam, pDoubleprecisionvarParam, pFloatvarParam, pIntvarParam, pIntegervarParam, pNaturalvarParam, pNaturalnvarParam, pNumberfvarParam, pNumericvarParam, pPlsvarParam, pBinaryvarParam, pPositivevarParam, pPositivenvarParam, pRealvarParam, pSigntypevarParam, pSmallintvarParam, pBinarydoublevarParam, pBinaryfloatvarParam, pNumber3ColParam, xDecvarParam, xDecimalvarParam, xDoubleprecisionvarParam, xFloatvarParam, xIntvarParam, xIntegervarParam, xNaturalvarParam, xNaturalnvarParam, xNumberfvarParam, xNumericvarParam, xPlsvarParam, xBinaryvarParam, xPositivevarParam, xPositivenvarParam, xRealvarParam, xSigntypevarParam, xSmallintvarParam, xBinarydoublevarParam, xBinaryfloatvarParam, xNumber3ColParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(xDecvarParam))
+                        xDecvar = null;
+                    else
+                        xDecvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xDecvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xDecimalvarParam))
+                        xDecimalvar = null;
+                    else
+                        xDecimalvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xDecimalvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xDoubleprecisionvarParam))
+                        xDoubleprecisionvar = null;
+                    else
+                        xDoubleprecisionvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xDoubleprecisionvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xFloatvarParam))
+                        xFloatvar = null;
+                    else
+                        xFloatvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xFloatvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xIntvarParam))
+                        xIntvar = null;
+                    else
+                        xIntvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xIntvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xIntegervarParam))
+                        xIntegervar = null;
+                    else
+                        xIntegervar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xIntegervarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNaturalvarParam))
+                        xNaturalvar = null;
+                    else
+                        xNaturalvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xNaturalvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNaturalnvarParam))
+                        xNaturalnvar = null;
+                    else
+                        xNaturalnvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xNaturalnvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNumberfvarParam))
+                        xNumberfvar = null;
+                    else
+                        xNumberfvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xNumberfvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNumericvarParam))
+                        xNumericvar = null;
+                    else
+                        xNumericvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xNumericvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xPlsvarParam))
+                        xPlsvar = null;
+                    else
+                        xPlsvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xPlsvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xBinaryvarParam))
+                        xBinaryvar = null;
+                    else
+                        xBinaryvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xBinaryvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xPositivevarParam))
+                        xPositivevar = null;
+                    else
+                        xPositivevar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xPositivevarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xPositivenvarParam))
+                        xPositivenvar = null;
+                    else
+                        xPositivenvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xPositivenvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xRealvarParam))
+                        xRealvar = null;
+                    else
+                        xRealvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xRealvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xSigntypevarParam))
+                        xSigntypevar = null;
+                    else
+                        xSigntypevar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xSigntypevarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xSmallintvarParam))
+                        xSmallintvar = null;
+                    else
+                        xSmallintvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xSmallintvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xBinarydoublevarParam))
+                        xBinarydoublevar = null;
+                    else
+                        xBinarydoublevar = (double) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xBinarydoublevarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xBinaryfloatvarParam))
+                        xBinaryfloatvar = null;
+                    else
+                        xBinaryfloatvar = (float) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xBinaryfloatvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(xNumber3ColParam))
+                        xNumber3Col = null;
+                    else
+                        xNumber3Col = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) xNumber3ColParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeNumProcInout(ref decimal? pDecvar, ref decimal? pDecimalvar, ref decimal? pDoubleprecisionvar, ref decimal? pFloatvar, ref decimal? pIntvar, ref decimal? pIntegervar, ref int? pNaturalvar, ref int? pNaturalnvar, ref decimal? pNumberfvar, ref decimal? pNumericvar, ref int? pPlsvar, ref int? pBinaryvar, ref int? pPositivevar, ref int? pPositivenvar, ref decimal? pRealvar, ref int? pSigntypevar, ref decimal? pSmallintvar, ref double? pBinarydoublevar, ref float? pBinaryfloatvar)
+        {
+            var pDecvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DECVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pDecvar.GetValueOrDefault() };
+            var pDecimalvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DECIMALVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pDecimalvar.GetValueOrDefault() };
+            var pDoubleprecisionvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_DOUBLEPRECISIONVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pDoubleprecisionvar.GetValueOrDefault() };
+            var pFloatvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_FLOATVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pFloatvar.GetValueOrDefault() };
+            var pIntvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_INTVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pIntvar.GetValueOrDefault() };
+            var pIntegervarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_INTEGERVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pIntegervar.GetValueOrDefault() };
+            var pNaturalvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATURALVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pNaturalvar.GetValueOrDefault() };
+            var pNaturalnvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NATURALNVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pNaturalnvar.GetValueOrDefault() };
+            var pNumberfvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NUMBERFVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pNumberfvar.GetValueOrDefault() };
+            var pNumericvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NUMERICVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pNumericvar.GetValueOrDefault() };
+            var pPlsvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_PLSVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pPlsvar.GetValueOrDefault() };
+            var pBinaryvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BINARYVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pBinaryvar.GetValueOrDefault() };
+            var pPositivevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_POSITIVEVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pPositivevar.GetValueOrDefault() };
+            var pPositivenvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_POSITIVENVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pPositivenvar.GetValueOrDefault() };
+            var pRealvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_REALVAR", OracleDbType = OracleDbType.Varchar2, Direction = System.Data.ParameterDirection.InputOutput, Value = pRealvar.GetValueOrDefault() };
+            var pSigntypevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_SIGNTYPEVAR", OracleDbType = OracleDbType.Int32, Direction = System.Data.ParameterDirection.InputOutput, Value = pSigntypevar.GetValueOrDefault() };
+            var pSmallintvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_SMALLINTVAR", OracleDbType = OracleDbType.Decimal, Direction = System.Data.ParameterDirection.InputOutput, Value = pSmallintvar.GetValueOrDefault() };
+            var pBinarydoublevarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BINARYDOUBLEVAR", OracleDbType = OracleDbType.BinaryDouble, Direction = System.Data.ParameterDirection.InputOutput, Value = pBinarydoublevar.GetValueOrDefault() };
+            var pBinaryfloatvarParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BINARYFLOATVAR", OracleDbType = OracleDbType.BinaryFloat, Direction = System.Data.ParameterDirection.InputOutput, Value = pBinaryfloatvar.GetValueOrDefault() };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_num_proc_inout(:P_DECVAR, :P_DECIMALVAR, :P_DOUBLEPRECISIONVAR, :P_FLOATVAR, :P_INTVAR, :P_INTEGERVAR, :P_NATURALVAR, :P_NATURALNVAR, :P_NUMBERFVAR, :P_NUMERICVAR, :P_PLSVAR, :P_BINARYVAR, :P_POSITIVEVAR, :P_POSITIVENVAR, :P_REALVAR, :P_SIGNTYPEVAR, :P_SMALLINTVAR, :P_BINARYDOUBLEVAR, :P_BINARYFLOATVAR); end;";
+					cmd.Parameters.AddRange(new[] {pDecvarParam, pDecimalvarParam, pDoubleprecisionvarParam, pFloatvarParam, pIntvarParam, pIntegervarParam, pNaturalvarParam, pNaturalnvarParam, pNumberfvarParam, pNumericvarParam, pPlsvarParam, pBinaryvarParam, pPositivevarParam, pPositivenvarParam, pRealvarParam, pSigntypevarParam, pSmallintvarParam, pBinarydoublevarParam, pBinaryfloatvarParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pDecvarParam))
+                        pDecvar = null;
+                    else
+                        pDecvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pDecvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pDecimalvarParam))
+                        pDecimalvar = null;
+                    else
+                        pDecimalvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pDecimalvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pDoubleprecisionvarParam))
+                        pDoubleprecisionvar = null;
+                    else
+                        pDoubleprecisionvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pDoubleprecisionvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pFloatvarParam))
+                        pFloatvar = null;
+                    else
+                        pFloatvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pFloatvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pIntvarParam))
+                        pIntvar = null;
+                    else
+                        pIntvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pIntvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pIntegervarParam))
+                        pIntegervar = null;
+                    else
+                        pIntegervar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pIntegervarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNaturalvarParam))
+                        pNaturalvar = null;
+                    else
+                        pNaturalvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pNaturalvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNaturalnvarParam))
+                        pNaturalnvar = null;
+                    else
+                        pNaturalnvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pNaturalnvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNumberfvarParam))
+                        pNumberfvar = null;
+                    else
+                        pNumberfvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pNumberfvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pNumericvarParam))
+                        pNumericvar = null;
+                    else
+                        pNumericvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pNumericvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pPlsvarParam))
+                        pPlsvar = null;
+                    else
+                        pPlsvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pPlsvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pBinaryvarParam))
+                        pBinaryvar = null;
+                    else
+                        pBinaryvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pBinaryvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pPositivevarParam))
+                        pPositivevar = null;
+                    else
+                        pPositivevar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pPositivevarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pPositivenvarParam))
+                        pPositivenvar = null;
+                    else
+                        pPositivenvar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pPositivenvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pRealvarParam))
+                        pRealvar = null;
+                    else
+                        pRealvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pRealvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pSigntypevarParam))
+                        pSigntypevar = null;
+                    else
+                        pSigntypevar = (int) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pSigntypevarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pSmallintvarParam))
+                        pSmallintvar = null;
+                    else
+                        pSmallintvar = (decimal) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pSmallintvarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pBinarydoublevarParam))
+                        pBinarydoublevar = null;
+                    else
+                        pBinarydoublevar = (double) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pBinarydoublevarParam.Value).Value;
+
+                    if (IsSqlParameterNull(pBinaryfloatvarParam))
+                        pBinaryfloatvar = null;
+                    else
+                        pBinaryfloatvar = (float) ((Oracle.ManagedDataAccess.Types.OracleDecimal) pBinaryfloatvarParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
     }
     #endregion
 
@@ -270,6 +1729,301 @@ namespace TestDatabaseDataAnnotation
         public override string ToString()
         {
             throw new System.NotImplementedException();
+        }
+
+
+        // Stored Procedures
+        public decimal? TestFunc1()
+        {
+
+            decimal? returnValue = null;
+
+
+                    returnValue = default(decimal);
+
+
+            return returnValue;
+        }
+
+        public decimal? TestFunc2(decimal? pX, decimal? pY)
+        {
+
+            decimal? returnValue = null;
+
+
+                    returnValue = default(decimal);
+
+
+            return returnValue;
+        }
+
+        public decimal? TestFunc3(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ)
+        {
+
+            decimal? returnValue = null;
+
+            xZ = null;
+
+
+                    returnValue = default(decimal);
+                    pStr = default(string);
+                    xZ = default(decimal);
+
+
+            return returnValue;
+        }
+
+        public decimal? TestFunc4()
+        {
+
+            decimal? returnValue = null;
+
+
+                    returnValue = default(decimal);
+
+
+            return returnValue;
+        }
+
+        public string TestFunc5()
+        {
+
+            string returnValue = null;
+
+
+                    returnValue = default(string);
+
+
+            return returnValue;
+        }
+
+        public decimal? TestPkgTestFunc3(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ)
+        {
+
+            decimal? returnValue = null;
+
+            xZ = null;
+
+
+                    returnValue = default(decimal);
+                    pStr = default(string);
+                    xZ = default(decimal);
+
+
+            return returnValue;
+        }
+
+        public string TestPkgTestFunc4(int returnValueCharLength)
+        {
+
+            string returnValue = null;
+
+
+                    returnValue = default(string);
+
+
+            return returnValue;
+        }
+
+        public void TestPkgTestProc1(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ)
+        {
+
+
+            xZ = null;
+
+
+                    pStr = default(string);
+                    xZ = default(decimal);
+
+
+        }
+
+        public void TestPkgTypeNumProc()
+        {
+
+
+
+
+        }
+
+        public void TypeCharProc(string pCharcol, string pCharvaryingvar, string pCharactervar, string pCharactervaryingvar, string pNationalcharvaryvar, string pNationalcharactervaryingvar, string pNcharvar, string pNcharvaryingvar, string pNvarchar2Var, string pStringvar, string pVarcharvar, string pVarchar2Var, string pClobcol, string pNclobcol, out string xCharcol, int xCharcolCharLength, out string xCharvaryingvar, out string xCharactervar, int xCharactervarCharLength, out string xCharactervaryingvar, out string xNationalcharvaryvar, out string xNationalcharactervaryingvar, out string xNcharvar, int xNcharvarCharLength, out string xNcharvaryingvar, out string xNvarchar2Var, out string xStringvar, out string xVarcharvar, out string xVarchar2Var, out string xClobcol, out string xNclobcol)
+        {
+
+
+            xCharcol = null;
+            xCharvaryingvar = null;
+            xCharactervar = null;
+            xCharactervaryingvar = null;
+            xNationalcharvaryvar = null;
+            xNationalcharactervaryingvar = null;
+            xNcharvar = null;
+            xNcharvaryingvar = null;
+            xNvarchar2Var = null;
+            xStringvar = null;
+            xVarcharvar = null;
+            xVarchar2Var = null;
+            xClobcol = null;
+            xNclobcol = null;
+
+
+                    xCharcol = default(string);
+                    xCharvaryingvar = default(string);
+                    xCharactervar = default(string);
+                    xCharactervaryingvar = default(string);
+                    xNationalcharvaryvar = default(string);
+                    xNationalcharactervaryingvar = default(string);
+                    xNcharvar = default(string);
+                    xNcharvaryingvar = default(string);
+                    xNvarchar2Var = default(string);
+                    xStringvar = default(string);
+                    xVarcharvar = default(string);
+                    xVarchar2Var = default(string);
+                    xClobcol = default(string);
+                    xNclobcol = default(string);
+
+
+        }
+
+        public void TypeCharProcInout(ref string pCharcol, int pCharcolCharLength, ref string pCharvaryingvar, ref string pCharactervar, int pCharactervarCharLength, ref string pCharactervaryingvar, ref string pNationalcharvaryvar, ref string pNationalcharactervaryingvar, ref string pNcharvar, int pNcharvarCharLength, ref string pNcharvaryingvar, ref string pNvarchar2Var, ref string pStringvar, ref string pVarcharvar, ref string pVarchar2Var, ref string pClobcol, ref string pNclobcol)
+        {
+
+
+
+                    pCharcol = default(string);
+                    pCharvaryingvar = default(string);
+                    pCharactervar = default(string);
+                    pCharactervaryingvar = default(string);
+                    pNationalcharvaryvar = default(string);
+                    pNationalcharactervaryingvar = default(string);
+                    pNcharvar = default(string);
+                    pNcharvaryingvar = default(string);
+                    pNvarchar2Var = default(string);
+                    pStringvar = default(string);
+                    pVarcharvar = default(string);
+                    pVarchar2Var = default(string);
+                    pClobcol = default(string);
+                    pNclobcol = default(string);
+
+
+        }
+
+        public void TypeDateProc(System.DateTime? pDatecol, System.DateTime? pTimestampcol, System.DateTime? pDatedefaultcol, System.DateTime? pDatedefault2Col, System.DateTime? pTimestampdefaultcol, System.DateTime? pTimestampdefault2Col, System.DateTimeOffset? pTimestamptzcol, System.DateTime? pTimestampltzzcol, decimal? pIntervalyeartomonthcol, System.TimeSpan? pIntervaldaytoseccol, out System.DateTime? xDatecol, out System.DateTime? xTimestampcol, out System.DateTime? xDatedefaultcol, out System.DateTime? xDatedefault2Col, out System.DateTime? xTimestampdefaultcol, out System.DateTime? xTimestampdefault2Col, out System.DateTimeOffset? xTimestamptzcol, out System.DateTime? xTimestampltzzcol, out decimal? xIntervalyeartomonthcol, out System.TimeSpan? xIntervaldaytoseccol)
+        {
+
+
+            xDatecol = null;
+            xTimestampcol = null;
+            xDatedefaultcol = null;
+            xDatedefault2Col = null;
+            xTimestampdefaultcol = null;
+            xTimestampdefault2Col = null;
+            xTimestamptzcol = null;
+            xTimestampltzzcol = null;
+            xIntervalyeartomonthcol = null;
+            xIntervaldaytoseccol = null;
+
+
+                    xDatecol = default(System.DateTime);
+                    xTimestampcol = default(System.DateTime);
+                    xDatedefaultcol = default(System.DateTime);
+                    xDatedefault2Col = default(System.DateTime);
+                    xTimestampdefaultcol = default(System.DateTime);
+                    xTimestampdefault2Col = default(System.DateTime);
+                    xTimestamptzcol = default(System.DateTimeOffset);
+                    xTimestampltzzcol = default(System.DateTime);
+                    xIntervalyeartomonthcol = default(decimal);
+                    xIntervaldaytoseccol = default(System.TimeSpan);
+
+
+        }
+
+        public void TypeDateProcInout(ref System.DateTime? pDatecol, ref System.DateTime? pTimestampcol)
+        {
+
+
+
+                    pDatecol = default(System.DateTime);
+                    pTimestampcol = default(System.DateTime);
+
+
+        }
+
+        public void TypeNumProc(decimal? pDecvar, decimal? pDecimalvar, decimal? pDoubleprecisionvar, decimal? pFloatvar, decimal? pIntvar, decimal? pIntegervar, int? pNaturalvar, int? pNaturalnvar, decimal? pNumberfvar, decimal? pNumericvar, int? pPlsvar, int? pBinaryvar, int? pPositivevar, int? pPositivenvar, decimal? pRealvar, int? pSigntypevar, decimal? pSmallintvar, double? pBinarydoublevar, float? pBinaryfloatvar, decimal? pNumber3Col, out decimal? xDecvar, out decimal? xDecimalvar, out decimal? xDoubleprecisionvar, out decimal? xFloatvar, out decimal? xIntvar, out decimal? xIntegervar, out int? xNaturalvar, out int? xNaturalnvar, out decimal? xNumberfvar, out decimal? xNumericvar, out int? xPlsvar, out int? xBinaryvar, out int? xPositivevar, out int? xPositivenvar, out decimal? xRealvar, out int? xSigntypevar, out decimal? xSmallintvar, out double? xBinarydoublevar, out float? xBinaryfloatvar, out decimal? xNumber3Col)
+        {
+
+
+            xDecvar = null;
+            xDecimalvar = null;
+            xDoubleprecisionvar = null;
+            xFloatvar = null;
+            xIntvar = null;
+            xIntegervar = null;
+            xNaturalvar = null;
+            xNaturalnvar = null;
+            xNumberfvar = null;
+            xNumericvar = null;
+            xPlsvar = null;
+            xBinaryvar = null;
+            xPositivevar = null;
+            xPositivenvar = null;
+            xRealvar = null;
+            xSigntypevar = null;
+            xSmallintvar = null;
+            xBinarydoublevar = null;
+            xBinaryfloatvar = null;
+            xNumber3Col = null;
+
+
+                    xDecvar = default(decimal);
+                    xDecimalvar = default(decimal);
+                    xDoubleprecisionvar = default(decimal);
+                    xFloatvar = default(decimal);
+                    xIntvar = default(decimal);
+                    xIntegervar = default(decimal);
+                    xNaturalvar = default(int);
+                    xNaturalnvar = default(int);
+                    xNumberfvar = default(decimal);
+                    xNumericvar = default(decimal);
+                    xPlsvar = default(int);
+                    xBinaryvar = default(int);
+                    xPositivevar = default(int);
+                    xPositivenvar = default(int);
+                    xRealvar = default(decimal);
+                    xSigntypevar = default(int);
+                    xSmallintvar = default(decimal);
+                    xBinarydoublevar = default(double);
+                    xBinaryfloatvar = default(float);
+                    xNumber3Col = default(decimal);
+
+
+        }
+
+        public void TypeNumProcInout(ref decimal? pDecvar, ref decimal? pDecimalvar, ref decimal? pDoubleprecisionvar, ref decimal? pFloatvar, ref decimal? pIntvar, ref decimal? pIntegervar, ref int? pNaturalvar, ref int? pNaturalnvar, ref decimal? pNumberfvar, ref decimal? pNumericvar, ref int? pPlsvar, ref int? pBinaryvar, ref int? pPositivevar, ref int? pPositivenvar, ref decimal? pRealvar, ref int? pSigntypevar, ref decimal? pSmallintvar, ref double? pBinarydoublevar, ref float? pBinaryfloatvar)
+        {
+
+
+
+                    pDecvar = default(decimal);
+                    pDecimalvar = default(decimal);
+                    pDoubleprecisionvar = default(decimal);
+                    pFloatvar = default(decimal);
+                    pIntvar = default(decimal);
+                    pIntegervar = default(decimal);
+                    pNaturalvar = default(int);
+                    pNaturalnvar = default(int);
+                    pNumberfvar = default(decimal);
+                    pNumericvar = default(decimal);
+                    pPlsvar = default(int);
+                    pBinaryvar = default(int);
+                    pPositivevar = default(int);
+                    pPositivenvar = default(int);
+                    pRealvar = default(decimal);
+                    pSigntypevar = default(int);
+                    pSmallintvar = default(decimal);
+                    pBinarydoublevar = default(double);
+                    pBinaryfloatvar = default(float);
+
+
         }
 
     }
@@ -984,6 +2738,71 @@ namespace TestDatabaseDataAnnotation
         partial void InitializePartial();
     }
 
+    // The table 'NL_CLOBS' is not usable by entity framework because it
+    // does not have a primary key. It is listed here for completeness.
+    // NL_CLOBS
+    [NotMapped]
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class NlClob
+    {
+        [Column(@"C_CLOB", Order = 1, TypeName = "clob")]
+        [Display(Name = "C clob")]
+        public string CClob { get; set; } // C_CLOB
+
+        [Column(@"N_CLOB", Order = 2, TypeName = "nclob")]
+        [Display(Name = "N clob")]
+        public string NClob { get; set; } // N_CLOB
+
+        public NlClob()
+        {
+            InitializePartial();
+        }
+
+        partial void InitializePartial();
+    }
+
+    // The table 'NL_DATES' is not usable by entity framework because it
+    // does not have a primary key. It is listed here for completeness.
+    // NL_DATES
+    [NotMapped]
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class NlDate
+    {
+        [Column(@"T_TZ", Order = 1, TypeName = "timestamp with time zone")]
+        [Display(Name = "T tz")]
+        public System.DateTimeOffset? TTz { get; set; } // T_TZ
+
+        public NlDate()
+        {
+            InitializePartial();
+        }
+
+        partial void InitializePartial();
+    }
+
+    // The table 'NL_INTERVALS' is not usable by entity framework because it
+    // does not have a primary key. It is listed here for completeness.
+    // NL_INTERVALS
+    [NotMapped]
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class NlInterval
+    {
+        [Column(@"I1", Order = 1, TypeName = "interval year to month")]
+        [Display(Name = "I 1")]
+        public decimal? I1 { get; set; } // I1
+
+        [Column(@"I2", Order = 2, TypeName = "interval day to second")]
+        [Display(Name = "I 2")]
+        public System.TimeSpan? I2 { get; set; } // I2
+
+        public NlInterval()
+        {
+            InitializePartial();
+        }
+
+        partial void InitializePartial();
+    }
+
     // REGIONS
     [Table("REGIONS", Schema = "HR")]
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
@@ -1241,15 +3060,15 @@ namespace TestDatabaseDataAnnotation
 
         [Column(@"INTERVALDAYTOSECCOL", Order = 19, TypeName = "interval day to second")]
         [Display(Name = "Intervaldaytoseccol")]
-        public decimal? Intervaldaytoseccol { get; set; } // INTERVALDAYTOSECCOL
+        public System.TimeSpan? Intervaldaytoseccol { get; set; } // INTERVALDAYTOSECCOL
 
         [Column(@"INTERVALDAYTOSECCOL2", Order = 20, TypeName = "interval day to second")]
         [Display(Name = "Intervaldaytoseccol 2")]
-        public decimal? Intervaldaytoseccol2 { get; set; } // INTERVALDAYTOSECCOL2
+        public System.TimeSpan? Intervaldaytoseccol2 { get; set; } // INTERVALDAYTOSECCOL2
 
         [Column(@"INTERVALDAYTOSECCOL3", Order = 21, TypeName = "interval day to second")]
         [Display(Name = "Intervaldaytoseccol 3")]
-        public decimal? Intervaldaytoseccol3 { get; set; } // INTERVALDAYTOSECCOL3
+        public System.TimeSpan? Intervaldaytoseccol3 { get; set; } // INTERVALDAYTOSECCOL3
 
         public TypeDateTable()
         {
@@ -1729,9 +3548,9 @@ namespace TestDatabaseDataAnnotation
             Property(x => x.Intervalyeartomonthcol).IsOptional().HasPrecision(2,0);
             Property(x => x.Intervalyeartomonthcol2).IsOptional();
             Property(x => x.Intervalyeartomonthcol3).IsOptional().HasPrecision(9,0);
-            Property(x => x.Intervaldaytoseccol).IsOptional().HasPrecision(2,6);
+            Property(x => x.Intervaldaytoseccol).IsOptional();
             Property(x => x.Intervaldaytoseccol2).IsOptional();
-            Property(x => x.Intervaldaytoseccol3).IsOptional().HasPrecision(9,9);
+            Property(x => x.Intervaldaytoseccol3).IsOptional();
             InitializePartial();
         }
         partial void InitializePartial();
@@ -1809,6 +3628,10 @@ namespace TestDatabaseDataAnnotation
         }
         partial void InitializePartial();
     }
+
+    #endregion
+
+    #region Stored procedure return models
 
     #endregion
 

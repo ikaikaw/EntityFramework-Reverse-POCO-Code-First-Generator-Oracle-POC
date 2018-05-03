@@ -808,32 +808,7 @@
                     }
                 }
 
-                using (var sqlConnection = new SqlConnection(Settings.ConnectionString))
-                {
-                    foreach (var proc in storedProcs)
-                        reader.ReadStoredProcReturnObject(sqlConnection, proc);
-                }
-
-                // Remove stored procs where the return model type contains spaces and cannot be mapped
-                // Also need to remove any TVF functions with parameters that are non scalar types, such as DataTable
-                var validStoredProcedures = new List<StoredProcedure>();
-                foreach (var sp in storedProcs)
-                {
-                    if (!sp.ReturnModels.Any())
-                    {
-                        validStoredProcedures.Add(sp);
-                        continue;
-                    }
-
-                    if (sp.ReturnModels.Any(returnColumns => returnColumns.Any(c => c.ColumnName.Contains(" "))))
-                        continue;
-
-                    if (sp.IsTVF && sp.Parameters.Any(c => c.PropertyType == "System.Data.DataTable"))
-                        continue;
-
-                    validStoredProcedures.Add(sp);
-                }
-                return validStoredProcedures;
+                return storedProcs;
             }
         }
         catch(Exception x)
@@ -1355,7 +1330,8 @@
     {
         In,
         InOut,
-        Out
+        Out,
+		Return
     };
 
     public class StoredProcedureParameter
@@ -1365,6 +1341,7 @@
         public string Name;
         public string NameHumanCase;
         public string SqlDbType;
+		public string OdpNetType;
         public string PropertyType;
         public string UserDefinedTypeName;
         public int DateTimePrecision;
@@ -1742,64 +1719,27 @@ and cr.constraint_type in('R')
 ";
 
             private const string StoredProcedureSQL = @"
-SELECT  R.SPECIFIC_SCHEMA,
-        R.SPECIFIC_NAME,
-        R.ROUTINE_TYPE,
-        P.ORDINAL_POSITION,
-        P.PARAMETER_MODE,
-        P.PARAMETER_NAME,
-        P.DATA_TYPE,
-        ISNULL(P.CHARACTER_MAXIMUM_LENGTH, 0) AS CHARACTER_MAXIMUM_LENGTH,
-        ISNULL(P.NUMERIC_PRECISION, 0) AS NUMERIC_PRECISION,
-        ISNULL(P.NUMERIC_SCALE, 0) AS NUMERIC_SCALE,
-        ISNULL(P.DATETIME_PRECISION, 0) AS DATETIME_PRECISION,
-        P.USER_DEFINED_TYPE_SCHEMA + '.' + P.USER_DEFINED_TYPE_NAME AS USER_DEFINED_TYPE
-FROM    INFORMATION_SCHEMA.ROUTINES R
-        LEFT OUTER JOIN INFORMATION_SCHEMA.PARAMETERS P
-            ON P.SPECIFIC_SCHEMA = R.SPECIFIC_SCHEMA
-               AND P.SPECIFIC_NAME = R.SPECIFIC_NAME
-WHERE   R.ROUTINE_TYPE = 'PROCEDURE'
-        AND (
-             P.IS_RESULT = 'NO'
-             OR P.IS_RESULT IS NULL
-            )
-        AND R.SPECIFIC_SCHEMA + R.SPECIFIC_NAME IN (
-            SELECT  SCHEMA_NAME(sp.schema_id) + sp.name
-            FROM    sys.all_objects AS sp
-                    LEFT OUTER JOIN sys.all_sql_modules AS sm
-                        ON sm.object_id = sp.object_id
-            WHERE   sp.type = 'P'
-                    AND (CAST(CASE WHEN sp.is_ms_shipped = 1 THEN 1
-                                   WHEN (
-                                         SELECT major_id
-                                         FROM   sys.extended_properties
-                                         WHERE  major_id = sp.object_id
-                                                AND minor_id = 0
-                                                AND class = 1
-                                                AND name = N'microsoft_database_tools_support'
-                                        ) IS NOT NULL THEN 1
-                                   ELSE 0
-                              END AS BIT) = 0))
-
-UNION ALL
-SELECT  R.SPECIFIC_SCHEMA,
-        R.SPECIFIC_NAME,
-        R.ROUTINE_TYPE,
-        P.ORDINAL_POSITION,
-        P.PARAMETER_MODE,
-        P.PARAMETER_NAME,
-        P.DATA_TYPE,
-        ISNULL(P.CHARACTER_MAXIMUM_LENGTH, 0) AS CHARACTER_MAXIMUM_LENGTH,
-        ISNULL(P.NUMERIC_PRECISION, 0) AS NUMERIC_PRECISION,
-        ISNULL(P.NUMERIC_SCALE, 0) AS NUMERIC_SCALE,
-        ISNULL(P.DATETIME_PRECISION, 0) AS DATETIME_PRECISION,
-        P.USER_DEFINED_TYPE_SCHEMA + '.' + P.USER_DEFINED_TYPE_NAME AS USER_DEFINED_TYPE
-FROM    INFORMATION_SCHEMA.ROUTINES R
-        LEFT OUTER JOIN INFORMATION_SCHEMA.PARAMETERS P
-            ON P.SPECIFIC_SCHEMA = R.SPECIFIC_SCHEMA
-               AND P.SPECIFIC_NAME = R.SPECIFIC_NAME
-WHERE   R.ROUTINE_TYPE = 'FUNCTION'
-        AND R.DATA_TYPE = 'TABLE'";
+			select
+p.owner as ""SPECIFIC_SCHEMA"", /* NL: not sure if we should map a SQLServer ""schema"" to an Oracle ""owner"" */ 
+decode(p.procedure_name, null, p.object_name, p.object_name || '.' || p.procedure_name) as ""SPECIFIC_NAME"", 
+decode(a.position, 0, 'FUNCTION', 'PROCEDURE') as ""ROUTINE_TYPE"",
+decode(a.sequence, 0, null, a.position) as ""ORDINAL_POSITION"",
+decode(a.position, 0, 'RETURN', a.in_out) as ""PARAMETER_MODE"",
+a.argument_name as ""PARAMETER_NAME"",
+a.data_type as ""DATA_TYPE"",
+--a.pls_type as ""PLS_TYPE"",
+cast(0 as number(1)) as ""CHARACTER_MAXIMUM_LENGTH"",
+cast(0 as number(1)) as ""NUMERIC_PRECISION"",
+cast(0 as number(1)) as ""NUMERIC_SCALE"",
+cast(0 as number(1)) as ""DATETIME_PRECISION"",
+null as ""USER_DEFINED_TYPE""
+from 
+all_procedures p 
+inner join all_arguments a on a.object_id = p.object_id and a.subprogram_id = p.subprogram_id
+where 1=1
+and p.subprogram_id != 0
+order by p.object_name, p.subprogram_id, a.sequence
+";
 
         private const string IndexSQL = @"
 		select
@@ -2137,16 +2077,14 @@ OPTION (QUERYTRACEON 9481)";
                 while (rdr.Read())
                 {
                     var spType = rdr["ROUTINE_TYPE"].ToString().Trim().ToUpper();
-                    var isTVF = (spType == "FUNCTION");
-                    if (isTVF && !Settings.IncludeTableValuedFunctions)
-                        continue;
-
+                    
                     string schema = rdr["SPECIFIC_SCHEMA"].ToString().Trim();
                     if(Settings.SchemaFilterExclude != null && Settings.SchemaFilterExclude.IsMatch(schema))
                         continue;
 
                     string spName = rdr["SPECIFIC_NAME"].ToString().Trim();
                     var fullname = schema + "." + spName;
+					var sanitizedSpName = spName.Replace(".", "_");
                     if(Settings.StoredProcedureFilterExclude != null && (Settings.StoredProcedureFilterExclude.IsMatch(spName) || Settings.StoredProcedureFilterExclude.IsMatch(fullname)))
                         continue;
 
@@ -2155,9 +2093,9 @@ OPTION (QUERYTRACEON 9481)";
                         lastSp = fullname;
                         sp = new StoredProcedure
                         {
-                            IsTVF = isTVF,
+                            IsTVF = false,
                             Name = spName,
-                            NameHumanCase = (Settings.UsePascalCase ? Inflector.ToTitleCase(spName) : spName).Replace(" ", "").Replace("$", ""),
+                            NameHumanCase = (Settings.UsePascalCase ? Inflector.ToTitleCase(sanitizedSpName) : sanitizedSpName).Replace(" ", "").Replace("$", ""),
                             Schema = schema
                         };
                         sp.NameHumanCase = CleanUp(sp.NameHumanCase);
@@ -2183,9 +2121,10 @@ OPTION (QUERYTRACEON 9481)";
                         var param = new StoredProcedureParameter
                         {
                             Ordinal             = Convert.ToInt32(rdr["ORDINAL_POSITION"]),
-                            Mode                = parameterMode == "IN" ? StoredProcedureParameterMode.In : StoredProcedureParameterMode.InOut,
+                            Mode                = parameterMode == "OUT" ? StoredProcedureParameterMode.Out : parameterMode == "IN/OUT" ? StoredProcedureParameterMode.InOut : parameterMode == "RETURN" ? StoredProcedureParameterMode.Return : StoredProcedureParameterMode.In,
                             Name                = rdr["PARAMETER_NAME"].ToString().Trim(),
                             SqlDbType           = GetSqlDbType(typename),
+							OdpNetType			= GetOdpNetType(typename),
                             PropertyType        = GetPropertyType(typename, maxLength, precision, dateTimePrecision, scale),
                             DateTimePrecision   = dateTimePrecision,
                             MaxLength           = maxLength,
@@ -2204,6 +2143,10 @@ OPTION (QUERYTRACEON 9481)";
 
                             sp.Parameters.Add(param);
                         }
+						if (param.Mode == StoredProcedureParameterMode.Return)
+						{
+							sp.Parameters.Add(param);
+						}
                     }
                 }
             }
@@ -2579,137 +2522,164 @@ OPTION (QUERYTRACEON 9481)";
 
         private static string GetSqlDbType(string sqlType)
         {
-            var sysType = "VarChar";
+            var sysType = "Varchar2";
             switch(sqlType)
             {
-                case "hierarchyid":
-                    sysType = "VarChar";
+                case "bfile":
+                    sysType = "BFile";
                     break;
+				case "binary_float":
+                    sysType = "BinaryFloat";
+                    break;
+				case "binary_double":
+                    sysType = "BinaryDouble";
+                    break;
+				case "blob":
+                    sysType = "Blob";
+                    break;
+				case "boolean":
+                    sysType = "Boolean";
+                    break;
+				case "char":
+					sysType = "Char";
+					break;
+				case "clob":
+					sysType = "Clob";
+					break;
+				case "date":
+					sysType = "Date";
+					break;
+				case "number":
+					sysType = "Decimal";
+					break;
+				case "interval day to second":
+					sysType = "IntervalDS";
+					break;
+				case "interval year to month":
+					sysType = "IntervalYM";
+					break;
+				case "long":
+					sysType = "Long";
+					break;
+				case "long raw":
+					sysType = "LongRaw";
+					break;
+				case "nchar":
+					sysType = "NChar";
+					break;
+				case "nclob":
+					sysType = "NClob";
+					break;
+				case "nvarchar2":
+					sysType = "NVarchar2";
+					break;
+				case "raw":
+					sysType = "Raw";
+					break;
+				case "ref cursor":
+					sysType = "RefCursor";
+					break;
+				case "timestamp":
+					sysType = "TimeStamp";
+					break;
+				case "timestamp with local time zone":
+					sysType = "TimeStampLTZ";
+					break;
+				case "timestamp with time zone":
+					sysType = "TimeStampTZ";
+					break;
+				case "varchar2":
+					sysType = "Varchar2";
+					break;
+				case "xmltype":
+					sysType = "XmlType";
+					break;
+				case "binary_integer":
+					sysType = "Int32";
+					break;
+				
+            }
+            return sysType;
+        }
 
-                case "bigint":
-                    sysType = "BigInt";
+		private static string GetOdpNetType(string sqlType)
+        {
+            var sysType = "OracleDecimal";
+            switch(sqlType)
+            {
+                case "bfile":
+                    sysType = "OracleBFile";
                     break;
-
-                case "binary":
-                    sysType = "Binary";
+				case "binary_float":
+                    sysType = "OracleDecimal";
                     break;
-
-                case "bit":
-                    sysType = "Bit";
+				case "binary_double":
+                    sysType = "OracleDecimal";
                     break;
-
-                case "char":
-                    sysType = "Char";
+				case "blob":
+                    sysType = "OracleBlob";
                     break;
-
-                case "datetime":
-                    sysType = "DateTime";
+				case "boolean":
+                    sysType = "OracleBoolean";
                     break;
-
-                case "decimal":
-                    sysType = "Decimal";
-                    break;
-
-                case "float":
-                    sysType = "Float";
-                    break;
-
-                case "image":
-                    sysType = "Image";
-                    break;
-
-                case "int":
-                    sysType = "Int";
-                    break;
-
-                case "money":
-                    sysType = "Money";
-                    break;
-
-                case "nchar":
-                    sysType = "NChar";
-                    break;
-
-                case "ntext":
-                    sysType = "NText";
-                    break;
-
-                case "nvarchar":
-                    sysType = "NVarChar";
-                    break;
-
-                case "real":
-                    sysType = "Real";
-                    break;
-
-                case "uniqueidentifier":
-                    sysType = "UniqueIdentifier";
-                    break;
-
-                case "smalldatetime":
-                    sysType = "SmallDateTime";
-                    break;
-
-                case "smallint":
-                    sysType = "SmallInt";
-                    break;
-
-                case "smallmoney":
-                    sysType = "SmallMoney";
-                    break;
-
-                case "text":
-                    sysType = "Text";
-                    break;
-
-                case "timestamp":
-                    sysType = "Timestamp";
-                    break;
-
-                case "tinyint":
-                    sysType = "TinyInt";
-                    break;
-
-                case "varbinary":
-                    sysType = "VarBinary";
-                    break;
-
-                case "varchar":
-                    sysType = "VarChar";
-                    break;
-
-                case "variant":
-                    sysType = "Variant";
-                    break;
-
-                case "xml":
-                    sysType = "Xml";
-                    break;
-
-                case "udt":
-                    sysType = "Udt";
-                    break;
-
-                case "table type":
-                case "structured":
-                    sysType = "Structured";
-                    break;
-
-                case "date":
-                    sysType = "Date";
-                    break;
-
-                case "time":
-                    sysType = "Time";
-                    break;
-
-                case "datetime2":
-                    sysType = "DateTime2";
-                    break;
-
-                case "datetimeoffset":
-                    sysType = "DateTimeOffset";
-                    break;
+				case "char":
+					sysType = "OracleString";
+					break;
+				case "clob":
+					sysType = "OracleClob";
+					break;				
+				case "date":
+					sysType = "OracleDate";
+					break;
+				case "number":
+					sysType = "OracleDecimal";
+					break;
+				case "interval day to second":
+					sysType = "OracleIntervalDS";
+					break;
+				case "interval year to month":
+					sysType = "OracleIntervalYM";
+					break;
+				case "long":
+					sysType = "OracleDecimal";
+					break;
+				case "long raw":
+					sysType = "OracleDecimal";
+					break;
+				case "nchar":
+					sysType = "OracleString";
+					break;
+				case "nclob":
+					sysType = "OracleClob";
+					break;
+				case "nvarchar2":
+					sysType = "OracleString";
+					break;
+				case "raw":
+					sysType = "OracleDecimal";
+					break;
+				case "ref cursor":
+					sysType = "OracleRefCursor";
+					break;
+				case "timestamp":
+					sysType = "OracleTimeStamp";
+					break;
+				case "timestamp with local time zone":
+					sysType = "OracleTimeStampLTZ";
+					break;
+				case "timestamp with time zone":
+					sysType = "OracleTimeStampTZ";
+					break;
+				case "varchar2":
+					sysType = "OracleString";
+					break;
+				case "xmltype":
+					sysType = "OracleDecimal";
+					break;
+				case "binary_integer":
+					sysType = "OracleDecimal";
+					break;
+				
             }
             return sysType;
         }
@@ -2719,6 +2689,9 @@ OPTION (QUERYTRACEON 9481)";
             var sysType = "string";
             switch(sqlType)
             {
+				case "binary_integer":
+					sysType = "int";
+					break;
                 case "number":
 					if(scale == 0)
 					{
@@ -2745,10 +2718,12 @@ OPTION (QUERYTRACEON 9481)";
                 case "float":
 				// https://docs.oracle.com/database/121/ODPNT/entityEDMmapping.htm#CIHDBBBA
 				// EDM types do not support TimeSpan. Use Decimal to represent the total number of seconds. An application can obtain a TimeSpan by using the TimeSpan.FromSeconds static method.
-				case "interval day to second":
 				case "interval year to month":
                     sysType = "decimal";
                     break;
+				case "interval day to second":
+					sysType = "System.TimeSpan";
+					break;
                 case "date":
 				case "timestamp":
 				case "timestamp with local time zone":
@@ -3226,20 +3201,53 @@ OPTION (QUERYTRACEON 9481)";
     public static readonly Func<StoredProcedure, bool, string> WriteStoredProcFunctionParams = (sp, includeProcResult) =>
     {
         var sb = new StringBuilder();
+
+		var returnParam = sp.Parameters.FirstOrDefault(x => x.Mode == StoredProcedureParameterMode.Return);
+		if (returnParam != null && (returnParam.SqlDbType == "Char" || returnParam.SqlDbType == "NChar")) 
+		{
+			sb.Append("int returnValueCharLength");
+		}
+
         int n = 1;
-        int count = sp.Parameters.Count;
-        foreach (var p in sp.Parameters.OrderBy(x => x.Ordinal))
+		var query = sp.Parameters.Where(x => x.Mode != StoredProcedureParameterMode.Return);
+        int count = query.Count();
+		if (sb.Length > 0 && count > 0)
+		{
+			sb.Append(", ");
+		}
+        foreach (var p in query.OrderBy(x => x.Ordinal))
         {
             sb.AppendFormat("{0}{1}{2} {3}{4}",
-                p.Mode == StoredProcedureParameterMode.In ? "" : "out ",
+                p.Mode == StoredProcedureParameterMode.Out ? "out " : p.Mode == StoredProcedureParameterMode.InOut ? "ref " : "",
                 p.PropertyType,
                 NotNullable.Contains(p.PropertyType.ToLower()) ? string.Empty : "?",
                 p.NameHumanCase,
                 (n++ < count) ? ", " : string.Empty);
+
+			if (p.Mode != StoredProcedureParameterMode.In && (p.SqlDbType == "Char" || p.SqlDbType == "NChar")) 
+			{
+				count++;
+				sb.AppendFormat("int {0}{1}",
+					$"{p.NameHumanCase}CharLength",
+					(n++ < count) ? ", " : string.Empty);
+			}
         }
-        if (includeProcResult && sp.ReturnModels.Count > 0 && sp.ReturnModels.First().Count > 0)
-            sb.AppendFormat((sp.Parameters.Count > 0 ?  ", " : "") + "out int procResult");
         return sb.ToString();
+    };
+
+	public static readonly Func<StoredProcedure, string> WriteStoredProcOutParametersInit = (sp) =>
+    {
+		var sb = new StringBuilder();
+        foreach (var p in sp.Parameters.Where(x => x.Mode == StoredProcedureParameterMode.Out).OrderBy(x => x.Ordinal))
+        {
+			sb.AppendFormat("            {0} = null;", p.NameHumanCase).AppendLine();
+		}
+		if (sb.Length > 0) 
+		{
+			sb.Insert(0, "\n");
+			return sb.ToString();
+		}
+		return string.Empty;
     };
 
     public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionOverloadCall = (sp) =>
@@ -3257,22 +3265,41 @@ OPTION (QUERYTRACEON 9481)";
 
     public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionSqlAtParams = sp =>
     {
-        var sb = new StringBuilder();
-        int n = 1;
-        int count = sp.Parameters.Count;
-        foreach (var p in sp.Parameters.OrderBy(x => x.Ordinal))
-        {
-            sb.AppendFormat("{0}{1}{2}",
-                p.Name,
-                p.Mode == StoredProcedureParameterMode.In ? string.Empty : " OUTPUT",
-                (n++ < count) ? ", " : string.Empty);
-        }
-        return sb.ToString();
+		var query = sp.Parameters.Where(p => p.Mode != StoredProcedureParameterMode.Return);
+		int count = query.Count();
+			
+		if(count > 0) {
+			var sb = new StringBuilder();
+			int n = 1;
+			sb.Append("(");
+			foreach (var p in query.OrderBy(x => x.Ordinal))
+			{
+				sb.AppendFormat(":{0}{1}",
+					p.Name,
+					(n++ < count) ? ", " : string.Empty);
+			}
+			sb.Append(")");
+			return sb.ToString();
+		}
+		return string.Empty;
     };
 
-    public static readonly Func<StoredProcedureParameter, string> WriteStoredProcSqlParameterName = p => p.NameHumanCase + "Param";
+    public static readonly Func<StoredProcedureParameter, string> WriteStoredProcSqlParameterName = p => p.Mode == StoredProcedureParameterMode.Return ? "returnValueParam" : $"{p.NameHumanCase}Param";
 
-    public static readonly Func<StoredProcedure, bool, string> WriteStoredProcFunctionDeclareSqlParameter = (sp, includeProcResult) =>
+	public static readonly Func<StoredProcedureParameter, string> GetStringOutParamSize = (p) => 
+	{
+		if (p.SqlDbType == "Clob" || p.SqlDbType == "NClob")
+		{
+			return string.Empty;
+		}
+		if (p.SqlDbType == "Char" || p.SqlDbType == "NChar")
+		{
+			return p.Mode == StoredProcedureParameterMode.Return ? ", Size = returnValueCharLength" : $", Size = {p.NameHumanCase}CharLength";
+		}
+		return ", Size = 32767";
+	};
+
+    public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionDeclareSqlParameter = (sp) =>
     {
         var sb = new StringBuilder();
         foreach (var p in sp.Parameters.OrderBy(x => x.Ordinal))
@@ -3282,20 +3309,14 @@ OPTION (QUERYTRACEON 9481)";
             var isGeography = p.PropertyType == "System.Data.Entity.Spatial.DbGeography";
 
             sb.AppendLine(
-                $"            var {WriteStoredProcSqlParameterName(p)} = new System.Data.SqlClient.SqlParameter"
-                + $" {{ ParameterName = \"{p.Name}\", "
-                + (isGeography ? "UdtTypeName = \"geography\"" : $"SqlDbType = System.Data.SqlDbType.{p.SqlDbType}")
+                $"            var {WriteStoredProcSqlParameterName(p)} = new Oracle.ManagedDataAccess.Client.OracleParameter"
+                + (p.Mode == StoredProcedureParameterMode.Return ? " { ParameterName = \":returnValue\", " : $" {{ ParameterName = \":{p.Name}\", ")
+                + $"OracleDbType = OracleDbType.{p.SqlDbType}"
                 + ", Direction = System.Data.ParameterDirection."
-                + (p.Mode == StoredProcedureParameterMode.In ? "Input" : "Output")
-                + (p.Mode == StoredProcedureParameterMode.In
-                    ? ", Value = " + (isGeography
-                        ? $"Microsoft.SqlServer.Types.SqlGeography.Parse({p.NameHumanCase}.AsText())"
-                        : p.NameHumanCase + getValueOrDefault)
-                    : string.Empty)
-                + (p.MaxLength != 0 ? ", Size = " + p.MaxLength : string.Empty)
-                + ((p.Precision > 0 || p.Scale > 0) ? ", Precision = " + p.Precision + ", Scale = " + p.Scale : string.Empty)
-                + (p.PropertyType.ToLower().Contains("datatable") ? ", TypeName = \"" + p.UserDefinedTypeName + "\"" : string.Empty)
-                + " };");
+                + (p.Mode == StoredProcedureParameterMode.In ? "Input" : p.Mode == StoredProcedureParameterMode.Out ? "Output": p.Mode == StoredProcedureParameterMode.InOut ? "InputOutput" : p.Mode == StoredProcedureParameterMode.Return ? "ReturnValue" : "Input")
+                + (p.Mode == StoredProcedureParameterMode.In || p.Mode == StoredProcedureParameterMode.InOut ? ", Value = " + p.NameHumanCase + getValueOrDefault : string.Empty)
+				+ (p.OdpNetType == "OracleString" && p.PropertyType == "string" ? p.Mode == StoredProcedureParameterMode.In ? ", Size = " + p.NameHumanCase + ".Length" : GetStringOutParamSize(p) : string.Empty)
+				+ " };");
 
                 if (p.Mode == StoredProcedureParameterMode.In)
                 {
@@ -3306,9 +3327,22 @@ OPTION (QUERYTRACEON 9481)";
                         p.NameHumanCase, Environment.NewLine);
                 }
         }
-        if(includeProcResult && sp.ReturnModels.Count < 2)
-            sb.AppendLine("            var procResultParam = new System.Data.SqlClient.SqlParameter { ParameterName = \"@procResult\", SqlDbType = System.Data.SqlDbType.Int, Direction = System.Data.ParameterDirection.Output };");
-        return sb.ToString();
+		if (sb.Length > 0)
+		{
+			sb.Insert(0, "\n");
+			return sb.ToString();
+		}
+		return string.Empty;
+    };
+
+	public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionReturnValueAssignment = sp =>
+    {
+		var hasReturnParam = sp.Parameters.Any(p => p.Mode == StoredProcedureParameterMode.Return);
+		if (hasReturnParam)
+		{
+			return ":returnValue := ";
+		}
+		return string.Empty;
     };
 
     public static readonly Func<StoredProcedure, string> WriteTableValuedFunctionDeclareSqlParameter = sp =>
@@ -3325,19 +3359,23 @@ OPTION (QUERYTRACEON 9481)";
         return sb.ToString();
     };
 
-    public static readonly Func<StoredProcedure, bool, string> WriteStoredProcFunctionSqlParameterAnonymousArray = (sp, includeProcResultParam) =>
+    public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionSqlParameterAnonymousArray = (sp) =>
     {
         var sb = new StringBuilder();
         bool hasParam = false;
         foreach (var p in sp.Parameters.OrderBy(x => x.Ordinal))
         {
-            sb.Append(string.Format("{0}Param, ", p.NameHumanCase));
+			if(p.Mode == StoredProcedureParameterMode.Return)
+				sb.Append(string.Format("returnValueParam, ", p.NameHumanCase));
+			else
+				sb.Append(string.Format("{0}Param, ", p.NameHumanCase));
             hasParam = true;
         }
-        if (includeProcResultParam)
-            sb.Append("procResultParam");
-        else if(hasParam)
+        if(hasParam) {
+			sb.Insert(0, "cmd.Parameters.AddRange(new[] {");
             sb.Remove(sb.Length - 2, 2);
+			sb.Append("});");
+		}
         return sb.ToString();
     };
 
@@ -3361,17 +3399,25 @@ OPTION (QUERYTRACEON 9481)";
             var Default = string.Format("default({0})", p.PropertyType);
             var notNullable = NotNullable.Contains(p.PropertyType.ToLower());
 
+			var paramVarName = p.Mode == StoredProcedureParameterMode.Return ? "returnValueParam" : string.Format("{0}Param", p.NameHumanCase);
+			var varName = p.Mode == StoredProcedureParameterMode.Return ? "returnValue" : p.NameHumanCase;
             if(isFake)
-                sb.AppendLine(string.Format("            {0} = {1};", p.NameHumanCase, Default));
+                sb.AppendLine(string.Format("                    {0} = {1};", varName, Default));
             else
             {
-                sb.AppendLine(string.Format("            if (IsSqlParameterNull({0}Param))", p.NameHumanCase));
-                sb.AppendLine(string.Format("                {0} = {1};", p.NameHumanCase, notNullable ? Default : "null"));
-                sb.AppendLine("            else");
-                sb.AppendLine(string.Format("                {0} = ({1}) {2}Param.Value;", p.NameHumanCase, p.PropertyType, p.NameHumanCase));
+				sb.AppendLine("");
+                sb.AppendLine(string.Format("                    if (IsSqlParameterNull({0}))", paramVarName));
+                sb.AppendLine(string.Format("                        {0} = {1};", varName, notNullable ? Default : "null"));
+                sb.AppendLine("                    else");
+                sb.AppendLine(string.Format("                        {0} = ({1}) ((Oracle.ManagedDataAccess.Types.{2}) {3}.Value).Value;", varName, p.PropertyType, p.OdpNetType, paramVarName));
             }
         }
-        return sb.ToString();
+		if (sb.Length > 0)
+		{
+			sb.Insert(0, "\n");
+			return sb.ToString();
+		}
+        return string.Empty;
     };
 
     public static readonly Func<StoredProcedure, string> WriteStoredProcReturnModelName = sp =>
@@ -3392,27 +3438,36 @@ OPTION (QUERYTRACEON 9481)";
         return name;
     };
 
-    public static readonly Func<DataColumn, string> WriteStoredProcReturnColumn = col =>
-    {
-        var columnName = ReservedKeywords.Contains(col.ColumnName) ? "@" + col.ColumnName : col.ColumnName;
-
-        return string.Format("public {0} {1} {{ get; set; }}",
-            StoredProcedure.WrapTypeIfNullable(
-                (col.DataType.Name.Equals("SqlHierarchyId") ? "Microsoft.SqlServer.Types." : col.DataType.Namespace + ".") +
-                col.DataType.Name, col),
-            columnName);
-    };
-
     public static readonly Func<StoredProcedure, string> WriteStoredProcReturnType = (sp) =>
     {
-        var returnModelCount = sp.ReturnModels.Count;
-        if (returnModelCount == 0)
-            return "int";
-
-        var spReturnClassName = WriteStoredProcReturnModelName(sp);
-        return (returnModelCount == 1) ? string.Format("System.Collections.Generic.List<{0}>", spReturnClassName) : spReturnClassName;
+		var returnParam = sp.Parameters.FirstOrDefault(p => p.Mode == StoredProcedureParameterMode.Return);
+		if (returnParam == null)
+		{
+			return "void";
+		}
+        return string.Format("{0}{1}", returnParam.PropertyType, NotNullable.Contains(returnParam.PropertyType.ToLower()) ? string.Empty : "?");
     };
 
+	public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionReturnValueVariable = (sp) =>
+    {
+		var returnParam = sp.Parameters.FirstOrDefault(p => p.Mode == StoredProcedureParameterMode.Return);
+		if (returnParam != null)
+		{
+			return string.Format("\n            {0}{1} returnValue = null;", returnParam.PropertyType, NotNullable.Contains(returnParam.PropertyType.ToLower()) ? string.Empty : "?");
+		}
+		return string.Empty;
+    };
+	
+	public static readonly Func<StoredProcedure, string> WriteStoredProcFunctionReturnValueFinalStatement = (sp) =>
+    {
+		var returnParam = sp.Parameters.FirstOrDefault(p => p.Mode == StoredProcedureParameterMode.Return);
+		if (returnParam != null)
+		{
+			return "\n            return returnValue;";
+		}
+		return string.Empty;
+    };
+	
     /// <summary>
     /// Helper class in making dynamic class definitions easier.
     /// </summary>

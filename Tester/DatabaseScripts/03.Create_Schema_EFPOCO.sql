@@ -5,172 +5,178 @@
  
 -- drop table type_num_table;
 create table type_num_table (
-pk                  number(18) primary key,
-deccol              dec(38),
-deccol2             dec(38,10),
-decdefaultcol       dec(38,10) default 10.0,
-decdefault2col       dec(38,10) default (10.0),
-decdefault3col       dec(38,10) default ((10.0)),
-decimalcol          decimal(38),
-decimalcol2         decimal(38,10),
-doubleprecisioncol  double precision,
-floatcol            float(126),
-binaryfloatcol      binary_float,
-binarydoublecol     binary_double,
-intcol              int,
-integercol          integer,
-numbercol           number(38),
-numberdefaultcol    number(38) default 1,
-numberdefault2col   number(38) default to_number('1'),
-numberdefault3col   number(38) default (1 + to_number('1')),
-numberfcol          number,
-numericcol          numeric(38),
-numericfcol         numeric,
-realcol             real,
-smallintcol         smallint,
-number1col          number(1),
-number1col2         number(1,0),
-number2col          number(2),
-number3col          number(3),
-number4col          number(4),
-number4col2         number(4,0),
-number5col          number(5),
-number5col2         number(5,0),
-number6col          number(6),
-number7col          number(7),
-number8col          number(8),
-number9col          number(9),
-number10col         number(10),
-number10col2        number(10,0),
-number11col         number(11),
-number11col2        number(11,0),
-number12col         number(12),
-number13col         number(13),
-number14col         number(14),
-number15col         number(15),
-number16col         number(16),
-number17col         number(17),
-number18col         number(18),
-number19col         number(19),
-number19col2        number(19,0),
-number20col         number(20),
-number20col2        number(20,0),
-number21col         number(21),
-number22col         number(22),
-number23col         number(23),
-number24col         number(24),
-number25col         number(25)
+pk                          number(18) primary key,
+deccol                      dec(38),
+deccol2                     dec(38,10),
+decdefaultcol               dec(38,10) default 10.0,
+decdefault2col              dec(38,10) default (10.0),
+decdefault3col              dec(38,10) default ((10.0)),
+decimalcol                  decimal(38),
+decimalcol2                 decimal(38,10),
+doubleprecisioncol          double precision,
+doubleprecisiondefaultcol   double precision default 3.0,
+floatcol                    float(126),
+binaryfloatcol              binary_float,
+binaryfloatdefaultcol       binary_float default 1.0,
+binarydoublecol             binary_double,
+binarydoubledefaultcol      binary_double default 2.0,
+intcol                      int,
+integercol                  integer,
+numbercol                   number(38),
+numberdefaultcol            number(38) default 1,
+numberdefault2col           number(38) default to_number('1'),
+numberdefault3col           number(38) default (1 + to_number('1')),
+numberfcol                  number,
+numericcol                  numeric(38),
+numericfcol                 numeric,
+realcol                     real,
+smallintcol                 smallint,
+number1col                  number(1),
+number1col2                 number(1,0),
+number2col                  number(2),
+number3col                  number(3),
+number4col                  number(4),
+number4col2                 number(4,0),
+number5col                  number(5),
+number5col2                 number(5,0),
+number6col                  number(6),
+number7col                  number(7),
+number8col                  number(8),
+number9col                  number(9),
+number10col                 number(10),
+number10col2                number(10,0),
+number11col                 number(11),
+number11col2                number(11,0),
+number12col                 number(12),
+number13col                 number(13),
+number14col                 number(14),
+number15col                 number(15),
+number16col                 number(16),
+number17col                 number(17),
+number18col                 number(18),
+number19col                 number(19),
+number19col2                number(19,0),
+number20col                 number(20),
+number20col2                number(20,0),
+number21col                 number(21),
+number22col                 number(22),
+number23col                 number(23),
+number24col                 number(24),
+number25col                 number(25)
 );
 
 create or replace procedure type_num_proc (
-    p_decvar				in dec,
-    p_decimalvar			in decimal,
-    p_doubleprecisionvar	in double precision,
-    p_floatvar				in float,
-    p_intvar				in int,
-    p_integervar			in integer,
-    p_naturalvar			in natural,
-    p_naturalnvar			in naturaln,
-    p_numberfvar			in number,
-    p_numericvar			in numeric,
-    p_plsvar				in pls_integer,
+    p_decvar                in dec,
+    p_decimalvar            in decimal,
+    p_doubleprecisionvar    in double precision,
+    p_floatvar                in float,
+    p_intvar                in int,
+    p_integervar            in integer,
+    p_naturalvar            in natural,
+    p_naturalnvar            in naturaln,
+    p_numberfvar            in number,
+    p_numericvar            in numeric,
+    p_plsvar                in pls_integer,
     p_binaryvar             in binary_integer,
-    p_positivevar			in positive,
-    p_positivenvar			in positiven,
-    p_realvar				in real,
-    p_signtypevar			in signtype,
-    p_smallintvar			in smallint,
+    p_positivevar            in positive,
+    p_positivenvar            in positiven,
+    p_realvar                in real,
+    p_signtypevar            in signtype,
+    p_smallintvar            in smallint,
     --p_simplevar           in simple_integer;-- 11g
-    p_binarydoublevar		in binary_double,
-    p_binaryfloatvar		in binary_float,
-	x_decvar				out dec,
-    x_decimalvar			out decimal,
-    x_doubleprecisionvar	out double precision,
-    x_floatvar				out float,
-    x_intvar				out int,
-    x_integervar			out integer,
-    x_naturalvar			out natural,
-    x_naturalnvar			out naturaln,
-    x_numberfvar			out number,
-    x_numericvar			out numeric,
-    x_plsvar				out pls_integer,
+    p_binarydoublevar        in binary_double,
+    p_binaryfloatvar        in binary_float,
+    p_number3col            in type_num_table.number3col%type,
+    x_decvar                out dec,
+    x_decimalvar            out decimal,
+    x_doubleprecisionvar    out double precision,
+    x_floatvar                out float,
+    x_intvar                out int,
+    x_integervar            out integer,
+    x_naturalvar            out natural,
+    x_naturalnvar            out naturaln,
+    x_numberfvar            out number,
+    x_numericvar            out numeric,
+    x_plsvar                out pls_integer,
     x_binaryvar             out binary_integer,
-    x_positivevar			out positive,
-    x_positivenvar			out positiven,
-    x_realvar				out real,
-    x_signtypevar			out signtype,
-    x_smallintvar			out smallint,
+    x_positivevar            out positive,
+    x_positivenvar            out positiven,
+    x_realvar                out real,
+    x_signtypevar            out signtype,
+    x_smallintvar            out smallint,
     --x_simplevar           out simple_integer;-- 11g
-    x_binarydoublevar		out binary_double,
-    x_binaryfloatvar		out binary_float
+    x_binarydoublevar        out binary_double,
+    x_binaryfloatvar        out binary_float,
+    x_number3col            out type_num_table.number3col%type
 ) 
 is
 begin
-	x_decvar := p_decvar;
-	x_decimalvar := p_decimalvar;
-	x_doubleprecisionvar := p_doubleprecisionvar;
-	x_floatvar := p_floatvar;
-	x_intvar := p_intvar;
-	x_integervar := p_integervar;
-	x_naturalvar := p_naturalvar;
-	x_naturalnvar := p_naturalnvar;
-	x_numberfvar := p_numberfvar;
-	x_numericvar := p_numericvar;
-	x_plsvar := p_plsvar;
-	x_binaryvar := p_binaryvar;
-	x_positivevar := p_positivevar;
-	x_positivenvar := p_positivenvar;
-	x_realvar := p_realvar;
-	x_signtypevar := p_signtypevar;
-	x_smallintvar := p_smallintvar;
-	x_binarydoublevar := p_binarydoublevar;
-	x_binaryfloatvar := p_binaryfloatvar;
+    x_decvar := p_decvar;
+    x_decimalvar := p_decimalvar;
+    x_doubleprecisionvar := p_doubleprecisionvar;
+    x_floatvar := p_floatvar;
+    x_intvar := p_intvar;
+    x_integervar := p_integervar;
+    x_naturalvar := p_naturalvar;
+    x_naturalnvar := p_naturalnvar;
+    x_numberfvar := p_numberfvar;
+    x_numericvar := p_numericvar;
+    x_plsvar := p_plsvar;
+    x_binaryvar := p_binaryvar;
+    x_positivevar := p_positivevar;
+    x_positivenvar := p_positivenvar;
+    x_realvar := p_realvar;
+    x_signtypevar := p_signtypevar;
+    x_smallintvar := p_smallintvar;
+    x_binarydoublevar := p_binarydoublevar;
+    x_binaryfloatvar := p_binaryfloatvar;
+    x_number3col := p_number3col;
 end;
 /
 
 create or replace procedure type_num_proc_inout (
-    p_decvar				in out dec,
-    p_decimalvar			in out decimal,
-    p_doubleprecisionvar	in out double precision,
-    p_floatvar				in out float,
-    p_intvar				in out int,
-    p_integervar			in out integer,
-    p_naturalvar			in out natural,
-    p_naturalnvar			in out naturaln,
-    p_numberfvar			in out number,
-    p_numericvar			in out numeric,
-    p_plsvar				in out pls_integer,
+    p_decvar                in out dec,
+    p_decimalvar            in out decimal,
+    p_doubleprecisionvar    in out double precision,
+    p_floatvar                in out float,
+    p_intvar                in out int,
+    p_integervar            in out integer,
+    p_naturalvar            in out natural,
+    p_naturalnvar            in out naturaln,
+    p_numberfvar            in out number,
+    p_numericvar            in out numeric,
+    p_plsvar                in out pls_integer,
     p_binaryvar             in out binary_integer,
-    p_positivevar			in out positive,
-    p_positivenvar			in out positiven,
-    p_realvar				in out real,
-    p_signtypevar			in out signtype,
-    p_smallintvar			in out smallint,
+    p_positivevar            in out positive,
+    p_positivenvar            in out positiven,
+    p_realvar                in out real,
+    p_signtypevar            in out signtype,
+    p_smallintvar            in out smallint,
     --p_simplevar           in out simple_integer;-- 11g
-    p_binarydoublevar		in out binary_double,
-    p_binaryfloatvar		in out binary_float
+    p_binarydoublevar        in out binary_double,
+    p_binaryfloatvar        in out binary_float
 ) 
 is
 begin
-	p_decvar := p_decvar * -1;
-	p_decimalvar := p_decimalvar * -1;
-	p_doubleprecisionvar := p_doubleprecisionvar * -1;
-	p_floatvar := p_floatvar * -1;
-	p_intvar := p_intvar * -1;
-	p_integervar := p_integervar * -1;
-	p_naturalvar := p_naturalvar * -1;
-	p_naturalnvar := p_naturalnvar * -1;
-	p_numberfvar := p_numberfvar * -1;
-	p_numericvar := p_numericvar * -1;
-	p_plsvar := p_plsvar * -1;
-	p_binaryvar := p_binaryvar * -1;
-	p_positivevar := p_positivevar * -1;
-	p_positivenvar := p_positivenvar * -1;
-	p_realvar := p_realvar * -1;
-	p_signtypevar := p_signtypevar * -1;
-	p_smallintvar := p_smallintvar * -1;
-	p_binarydoublevar := p_binarydoublevar * -1;
-	p_binaryfloatvar := p_binaryfloatvar * -1;
+    p_decvar := p_decvar * -1;
+    p_decimalvar := p_decimalvar * -1;
+    p_doubleprecisionvar := p_doubleprecisionvar * -1;
+    p_floatvar := p_floatvar * -1;
+    p_intvar := p_intvar * -1;
+    p_integervar := p_integervar * -1;
+    p_naturalvar := p_naturalvar * -1;
+    p_naturalnvar := p_naturalnvar * -1;
+    p_numberfvar := p_numberfvar * -1;
+    p_numericvar := p_numericvar * -1;
+    p_plsvar := p_plsvar * -1;
+    p_binaryvar := p_binaryvar * -1;
+    p_positivevar := p_positivevar * -1;
+    p_positivenvar := p_positivenvar * -1;
+    p_realvar := p_realvar * -1;
+    p_signtypevar := p_signtypevar * -1;
+    p_smallintvar := p_smallintvar * -1;
+    p_binarydoublevar := p_binarydoublevar * -1;
+    p_binaryfloatvar := p_binaryfloatvar * -1;
 end;
 /
 
@@ -223,7 +229,7 @@ create or replace procedure type_char_proc (
    -- p_long                      in long,
     p_clobcol                     in clob,
     p_nclobcol                    in nclob,
-	x_charcol                     out char,
+    x_charcol                     out char,
     x_charvaryingvar              out char varying,
     x_charactervar                out character,
     x_charactervaryingvar         out character varying,
@@ -254,21 +260,23 @@ v_varcharvar                  varchar(32767);
 v_varchar2var                 varchar2(32767);
 v_varlong                    long;
 begin
-	x_charcol := p_charcol;
-	x_charvaryingvar := p_charvaryingvar;
-	x_charactervar := p_charactervar;
-	x_charactervaryingvar := p_charactervaryingvar;
-	x_nationalcharvaryvar := p_nationalcharvaryvar;
-	x_nationalcharactervaryingvar := p_nationalcharactervaryingvar;
-	x_ncharvar := p_ncharvar;
-	x_ncharvaryingvar := p_ncharvaryingvar;
-	x_nvarchar2var := p_nvarchar2var;
-	x_stringvar := p_stringvar;
-	x_varcharvar := p_varcharvar;
-	x_varchar2var := p_varchar2var;
-	--x_long := --p_long;
-	x_clobcol := p_clobcol;
-	x_nclobcol := p_nclobcol;
+    --insert into nl_clobs values (p_clobcol, p_nclobcol);
+    --commit;
+    x_charcol := p_charcol;
+    x_charvaryingvar := p_charvaryingvar;
+    x_charactervar := p_charactervar;
+    x_charactervaryingvar := p_charactervaryingvar;
+    x_nationalcharvaryvar := p_nationalcharvaryvar;
+    x_nationalcharactervaryingvar := p_nationalcharactervaryingvar;
+    x_ncharvar := p_ncharvar;
+    x_ncharvaryingvar := p_ncharvaryingvar;
+    x_nvarchar2var := p_nvarchar2var;
+    x_stringvar := p_stringvar;
+    x_varcharvar := p_varcharvar;
+    x_varchar2var := p_varchar2var;
+    --x_long := --p_long;
+    x_clobcol := p_clobcol;
+    x_nclobcol := p_nclobcol;
 end;
 /
 
@@ -291,21 +299,21 @@ create or replace procedure type_char_proc_inout (
 )
 is
 begin
-	p_charcol := p_charcol || '_XXX_';
-	p_charvaryingvar := p_charvaryingvar || '_XXX_';
-	p_charactervar := p_charactervar || '_XXX_';
-	p_charactervaryingvar := p_charactervaryingvar || '_XXX_';
-	p_nationalcharvaryvar := p_nationalcharvaryvar || '_XXX_';
-	p_nationalcharactervaryingvar := p_nationalcharactervaryingvar || '_XXX_';
-	p_ncharvar := p_ncharvar || '_XXX_';
-	p_ncharvaryingvar := p_ncharvaryingvar || '_XXX_';
-	p_nvarchar2var := p_nvarchar2var || '_XXX_';
-	p_stringvar := p_stringvar || '_XXX_';
-	p_varcharvar := p_varcharvar || '_XXX_';
-	p_varchar2var := p_varchar2var || '_XXX_';
-	--x_long := --p_long || '_XXX_';
-	p_clobcol := p_clobcol || '_XXX_';
-	p_nclobcol := p_nclobcol || '_XXX_';
+    p_charcol := p_charcol || '_XXX_';
+    p_charvaryingvar := p_charvaryingvar || '_XXX_';
+    p_charactervar := p_charactervar || '_XXX_';
+    p_charactervaryingvar := p_charactervaryingvar || '_XXX_';
+    p_nationalcharvaryvar := p_nationalcharvaryvar || '_XXX_';
+    p_nationalcharactervaryingvar := p_nationalcharactervaryingvar || '_XXX_';
+    p_ncharvar := p_ncharvar || '_XXX_';
+    p_ncharvaryingvar := p_ncharvaryingvar || '_XXX_';
+    p_nvarchar2var := p_nvarchar2var || '_XXX_';
+    p_stringvar := p_stringvar || '_XXX_';
+    p_varcharvar := p_varcharvar || '_XXX_';
+    p_varchar2var := p_varchar2var || '_XXX_';
+    --x_long := --p_long || '_XXX_';
+    p_clobcol := p_clobcol || '_XXX_';
+    p_nclobcol := p_nclobcol || '_XXX_';
 end;
 /
 
@@ -337,31 +345,53 @@ intervaldaytoseccol3    interval day(9) to second(9)
 
 
 create or replace procedure type_date_proc ( 
-    p_datecol               in date,
-    p_timestampcol          in timestamp,
-    x_datecol               out date,
-    x_timestampcol          out timestamp,
-    p_datedefaultcol        in date default sysdate,
-    p_datedefault2col       in date default to_date('2018-01-01 13:59:59','rrrr-mm-dd hh24:mi:ss'),
-    p_timestampdefaultcol   in timestamp default systimestamp,
-    p_timestampdefault2col  in timestamp default to_timestamp('2018-01-01 13:59:59.123456','rrrr-mm-dd hh24:mi:ss.ff'),
-    p_timestamptzcol        in timestamp with time zone,
-    p_timestampltzzcol      in timestamp with local time zone    
+    p_datecol                   in date,
+    p_timestampcol              in timestamp,    
+    p_datedefaultcol            in date default sysdate,
+    p_datedefault2col           in date default to_date('2018-01-01 13:59:59','rrrr-mm-dd hh24:mi:ss'),
+    p_timestampdefaultcol       in timestamp default systimestamp,
+    p_timestampdefault2col      in timestamp default to_timestamp('2018-01-01 13:59:59.123456','rrrr-mm-dd hh24:mi:ss.ff'),
+    p_timestamptzcol            in timestamp with time zone,
+    p_timestampltzzcol          in timestamp with local time zone,
+    p_intervalyeartomonthcol    in interval year to month,
+    p_intervaldaytoseccol       in interval day to second,
+    x_datecol                   out date,
+    x_timestampcol              out timestamp,
+    x_datedefaultcol            out date,
+    x_datedefault2col           out date,
+    x_timestampdefaultcol       out timestamp,
+    x_timestampdefault2col      out timestamp,
+    x_timestamptzcol            out timestamp with time zone,
+    x_timestampltzzcol          out timestamp with local time zone,
+    x_intervalyeartomonthcol    out interval year to month,
+    x_intervaldaytoseccol       out interval day to second    
 )
 is 
 begin
-	x_datecol := p_datecol;
-	x_timestampcol := p_timestampcol; 
+    x_datecol                := p_datecol;
+    x_timestampcol           := p_timestampcol;    
+    x_datedefaultcol         := p_datedefaultcol;
+    x_datedefault2col        := p_datedefault2col;
+    x_timestampdefaultcol    := p_timestampdefaultcol;
+    x_timestampdefault2col   := p_timestampdefault2col;
+    x_timestamptzcol         := p_timestamptzcol;
+    x_timestampltzzcol       := p_timestampltzzcol;
+    x_intervalyeartomonthcol := p_intervalyeartomonthcol;
+    x_intervaldaytoseccol    := p_intervaldaytoseccol;
+    x_intervalyeartomonthcol := p_intervalyeartomonthcol;
+    x_intervaldaytoseccol    := p_intervaldaytoseccol;
+    insert into nl_intervals values (x_intervalyeartomonthcol, x_intervaldaytoseccol);
+    commit;
 end;
 /
 
 create or replace procedure type_date_proc_inout ( 
-    p_datecol			in out date,
-    p_timestampcol		in out timestamp
+    p_datecol            in out date,
+    p_timestampcol        in out timestamp
 )
 is 
 begin
-	null;
+    null;
 end;
 /
 
@@ -387,10 +417,10 @@ end;
 /
 
 create or replace function test_func_3 (
-    p_x			number, -- absence of "in" is on purpose
-    p_y			in number,
-    p_str		in out varchar2,
-    x_z			out number
+    p_x            number, -- absence of "in" is on purpose
+    p_y            in number,
+    p_str        in out varchar2,
+    x_z            out number
 ) return number
 is
 begin
@@ -399,6 +429,23 @@ begin
     return x_z;
 end;
 /
+
+create or replace function test_func_4
+return number
+is
+begin
+    return null;
+end;
+/
+
+create or replace function test_func_5
+return varchar2
+is
+begin
+    return '_XXX_';
+end;
+/
+
 
 --
 -- package tests
@@ -423,6 +470,8 @@ create or replace package test_pkg as
         x_z            out number
     ) return number;
 
+    function test_func_4        
+    return char;
 end;
 /
 create or replace package body test_pkg as
@@ -455,9 +504,16 @@ create or replace package body test_pkg as
     ) return number
     is
     begin
-        p_str := '_XXX_';
-        x_z := p_x + p_y;
+        p_str := '_XXXXXX_';
+        x_z := p_x * p_y;
         return x_z;
+    end;
+    
+    function test_func_4        
+    return char
+    is
+    begin
+        return 'XXX_YYY';
     end;
 end;
 /

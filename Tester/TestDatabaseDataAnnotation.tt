@@ -523,9 +523,8 @@
     // Read schema
     var factory = GetDbProviderFactory();
     Settings.Tables = LoadTables(factory);
-    // Settings.StoredProcs = LoadStoredProcs(factory);
-	Settings.StoredProcs = new List<StoredProcedure>();
-    // Generate output
+    Settings.StoredProcs = LoadStoredProcs(factory);
+	// Generate output
     if (Settings.Tables.Count > 0 || Settings.StoredProcs.Count > 0)
     {
 #>
