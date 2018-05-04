@@ -73,6 +73,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProcedureStringTests.cs" />
+    <Compile Include="ProcedureBlobTests.cs" />
+    <Compile Include="ProcedureDateTests.cs" />
+    <Compile Include="ProcedureNumberTests.cs" />
     <Compile Include="ProcedureTests.cs" />
     <Compile Include="CrudTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

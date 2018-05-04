@@ -260,8 +260,6 @@ v_varcharvar                  varchar(32767);
 v_varchar2var                 varchar2(32767);
 v_varlong                    long;
 begin
-    --insert into nl_clobs values (p_clobcol, p_nclobcol);
-    --commit;
     x_charcol := p_charcol;
     x_charvaryingvar := p_charvaryingvar;
     x_charactervar := p_charactervar;
@@ -317,6 +315,111 @@ begin
 end;
 /
 
+create or replace function type_clob_func ( 
+    p_clob                         in clob    
+)
+return clob 
+is
+v_clob clob;
+begin
+    v_clob := p_clob;        
+    return v_clob;
+end;
+/
+
+
+create or replace function type_nclob_func ( 
+    p_nclob                         in nclob    
+)
+return nclob 
+is
+v_nclob nclob;
+begin
+    v_nclob := p_nclob;        
+    return v_nclob;
+end;
+/
+
+create or replace procedure type_clob_proc_inout ( 
+    p_clob         in out clob
+)
+is
+begin
+    p_clob := empty_clob();
+end;
+/
+
+create or replace procedure type_clob_proc_inout2 ( 
+    p_clob                         in out clob    
+)
+is
+begin        
+    null;
+end;
+/
+
+create or replace procedure type_clob_proc_inout3 ( 
+    p_clob                         in out clob    
+)
+is
+v_clob  clob;
+begin        
+    v_clob := p_clob;
+    p_clob := v_clob;
+end;
+/
+
+create or replace procedure type_blob_proc ( 
+    p_blob                         in blob,
+    x_blob                      out blob
+)
+is
+begin        
+    x_blob := p_blob;
+end;
+/
+
+create or replace function type_blob_func ( 
+    p_blob                         in blob    
+)
+return blob 
+is
+v_blob blob;
+begin       
+    v_blob := p_blob; 
+    return v_blob;
+end;
+/
+
+create or replace procedure type_blob_proc_inout ( 
+    p_blob         in out blob
+)
+is
+begin
+    p_blob := empty_blob();
+end;
+/
+
+create or replace procedure type_blob_proc_inout2 ( 
+    p_blob                         in out blob    
+)
+is
+begin        
+    null;
+end;
+/
+
+create or replace procedure type_blob_proc_inout3 ( 
+    p_blob                         in out blob    
+)
+is
+v_blob  blob;
+begin        
+    v_blob := p_blob;
+    p_blob := v_blob;
+end;
+/
+
 -- drop table type_date_table;
 create table type_date_table (
 pk                      number(18) primary key,
@@ -337,10 +440,10 @@ timestampltzcol2        timestamp(0) with local time zone,
 timestampltzcol3        timestamp(9) with local time zone,
 intervalyeartomonthcol  interval year to month,
 intervalyeartomonthcol2 interval year(0) to month,
-intervalyeartomonthcol3 interval year(9) to month,
-intervaldaytoseccol     interval day to second,
-intervaldaytoseccol2    interval day(0) to second(0),
-intervaldaytoseccol3    interval day(9) to second(9)
+intervalyeartomonthcol3 interval year(9) to month
+--intervaldaytoseccol     interval day to second -- Not supported by Oracle.ManagedDataAccess
+--intervaldaytoseccol2    interval day(0) to second(0), -- Not supported by Oracle.ManagedDataAccess
+--intervaldaytoseccol3    interval day(9) to second(9)  -- Not supported by Oracle.ManagedDataAccess
 );
 
 
@@ -380,8 +483,6 @@ begin
     x_intervaldaytoseccol    := p_intervaldaytoseccol;
     x_intervalyeartomonthcol := p_intervalyeartomonthcol;
     x_intervaldaytoseccol    := p_intervaldaytoseccol;
-    insert into nl_intervals values (x_intervalyeartomonthcol, x_intervaldaytoseccol);
-    commit;
 end;
 /
 

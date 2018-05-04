@@ -42,7 +42,9 @@ namespace TestDatabaseDataAnnotation
         System.Data.Entity.DbSet<Job> Jobs { get; set; } // JOBS
         System.Data.Entity.DbSet<JobHistory> JobHistories { get; set; } // JOB_HISTORY
         System.Data.Entity.DbSet<Location> Locations { get; set; } // LOCATIONS
+        System.Data.Entity.DbSet<NlClob> NlClobs { get; set; } // NL_CLOBS
         System.Data.Entity.DbSet<Region> Regions { get; set; } // REGIONS
+        System.Data.Entity.DbSet<TypeBlobTable> TypeBlobTables { get; set; } // TYPE_BLOB_TABLE
         System.Data.Entity.DbSet<TypeCharTable> TypeCharTables { get; set; } // TYPE_CHAR_TABLE
         System.Data.Entity.DbSet<TypeDateTable> TypeDateTables { get; set; } // TYPE_DATE_TABLE
         System.Data.Entity.DbSet<TypeNumTable> TypeNumTables { get; set; } // TYPE_NUM_TABLE
@@ -70,10 +72,22 @@ namespace TestDatabaseDataAnnotation
         string TestPkgTestFunc4(int returnValueCharLength);
         void TestPkgTestProc1(decimal? pX, decimal? pY, ref string pStr, out decimal? xZ);
         void TestPkgTypeNumProc();
+        byte[] TypeBlobFunc(byte[] pBlob);
+        void TypeBlobProc(byte[] pBlob, out byte[] xBlob);
+        void TypeBlobProcInout(ref byte[] pBlob);
+        void TypeBlobProcInout2(ref byte[] pBlob);
+        void TypeBlobProcInout3(ref byte[] pBlob);
         void TypeCharProc(string pCharcol, string pCharvaryingvar, string pCharactervar, string pCharactervaryingvar, string pNationalcharvaryvar, string pNationalcharactervaryingvar, string pNcharvar, string pNcharvaryingvar, string pNvarchar2Var, string pStringvar, string pVarcharvar, string pVarchar2Var, string pClobcol, string pNclobcol, out string xCharcol, int xCharcolCharLength, out string xCharvaryingvar, out string xCharactervar, int xCharactervarCharLength, out string xCharactervaryingvar, out string xNationalcharvaryvar, out string xNationalcharactervaryingvar, out string xNcharvar, int xNcharvarCharLength, out string xNcharvaryingvar, out string xNvarchar2Var, out string xStringvar, out string xVarcharvar, out string xVarchar2Var, out string xClobcol, out string xNclobcol);
         void TypeCharProcInout(ref string pCharcol, int pCharcolCharLength, ref string pCharvaryingvar, ref string pCharactervar, int pCharactervarCharLength, ref string pCharactervaryingvar, ref string pNationalcharvaryvar, ref string pNationalcharactervaryingvar, ref string pNcharvar, int pNcharvarCharLength, ref string pNcharvaryingvar, ref string pNvarchar2Var, ref string pStringvar, ref string pVarcharvar, ref string pVarchar2Var, ref string pClobcol, ref string pNclobcol);
+        string TypeClobFunc(string pClob);
+        void TypeClobProc(string pClob, out string xClob);
+        void TypeClobProcInout(ref string pClob);
+        void TypeClobProcInout2(ref string pClob);
+        void TypeClobProcInout3(ref string pClob);
         void TypeDateProc(System.DateTime? pDatecol, System.DateTime? pTimestampcol, System.DateTime? pDatedefaultcol, System.DateTime? pDatedefault2Col, System.DateTime? pTimestampdefaultcol, System.DateTime? pTimestampdefault2Col, System.DateTimeOffset? pTimestamptzcol, System.DateTime? pTimestampltzzcol, decimal? pIntervalyeartomonthcol, System.TimeSpan? pIntervaldaytoseccol, out System.DateTime? xDatecol, out System.DateTime? xTimestampcol, out System.DateTime? xDatedefaultcol, out System.DateTime? xDatedefault2Col, out System.DateTime? xTimestampdefaultcol, out System.DateTime? xTimestampdefault2Col, out System.DateTimeOffset? xTimestamptzcol, out System.DateTime? xTimestampltzzcol, out decimal? xIntervalyeartomonthcol, out System.TimeSpan? xIntervaldaytoseccol);
         void TypeDateProcInout(ref System.DateTime? pDatecol, ref System.DateTime? pTimestampcol);
+        string TypeNclobFunc(string pNclob);
+        void TypeNclobProc(string pNclob, out string xNclob);
         void TypeNumProc(decimal? pDecvar, decimal? pDecimalvar, decimal? pDoubleprecisionvar, decimal? pFloatvar, decimal? pIntvar, decimal? pIntegervar, int? pNaturalvar, int? pNaturalnvar, decimal? pNumberfvar, decimal? pNumericvar, int? pPlsvar, int? pBinaryvar, int? pPositivevar, int? pPositivenvar, decimal? pRealvar, int? pSigntypevar, decimal? pSmallintvar, double? pBinarydoublevar, float? pBinaryfloatvar, decimal? pNumber3Col, out decimal? xDecvar, out decimal? xDecimalvar, out decimal? xDoubleprecisionvar, out decimal? xFloatvar, out decimal? xIntvar, out decimal? xIntegervar, out int? xNaturalvar, out int? xNaturalnvar, out decimal? xNumberfvar, out decimal? xNumericvar, out int? xPlsvar, out int? xBinaryvar, out int? xPositivevar, out int? xPositivenvar, out decimal? xRealvar, out int? xSigntypevar, out decimal? xSmallintvar, out double? xBinarydoublevar, out float? xBinaryfloatvar, out decimal? xNumber3Col);
         void TypeNumProcInout(ref decimal? pDecvar, ref decimal? pDecimalvar, ref decimal? pDoubleprecisionvar, ref decimal? pFloatvar, ref decimal? pIntvar, ref decimal? pIntegervar, ref int? pNaturalvar, ref int? pNaturalnvar, ref decimal? pNumberfvar, ref decimal? pNumericvar, ref int? pPlsvar, ref int? pBinaryvar, ref int? pPositivevar, ref int? pPositivenvar, ref decimal? pRealvar, ref int? pSigntypevar, ref decimal? pSmallintvar, ref double? pBinarydoublevar, ref float? pBinaryfloatvar);
     }
@@ -91,7 +105,9 @@ namespace TestDatabaseDataAnnotation
         public System.Data.Entity.DbSet<Job> Jobs { get; set; } // JOBS
         public System.Data.Entity.DbSet<JobHistory> JobHistories { get; set; } // JOB_HISTORY
         public System.Data.Entity.DbSet<Location> Locations { get; set; } // LOCATIONS
+        public System.Data.Entity.DbSet<NlClob> NlClobs { get; set; } // NL_CLOBS
         public System.Data.Entity.DbSet<Region> Regions { get; set; } // REGIONS
+        public System.Data.Entity.DbSet<TypeBlobTable> TypeBlobTables { get; set; } // TYPE_BLOB_TABLE
         public System.Data.Entity.DbSet<TypeCharTable> TypeCharTables { get; set; } // TYPE_CHAR_TABLE
         public System.Data.Entity.DbSet<TypeDateTable> TypeDateTables { get; set; } // TYPE_DATE_TABLE
         public System.Data.Entity.DbSet<TypeNumTable> TypeNumTables { get; set; } // TYPE_NUM_TABLE
@@ -155,7 +171,9 @@ namespace TestDatabaseDataAnnotation
             modelBuilder.Configurations.Add(new JobConfiguration());
             modelBuilder.Configurations.Add(new JobHistoryConfiguration());
             modelBuilder.Configurations.Add(new LocationConfiguration());
+            modelBuilder.Configurations.Add(new NlClobConfiguration());
             modelBuilder.Configurations.Add(new RegionConfiguration());
+            modelBuilder.Configurations.Add(new TypeBlobTableConfiguration());
             modelBuilder.Configurations.Add(new TypeCharTableConfiguration());
             modelBuilder.Configurations.Add(new TypeDateTableConfiguration());
             modelBuilder.Configurations.Add(new TypeNumTableConfiguration());
@@ -171,7 +189,9 @@ namespace TestDatabaseDataAnnotation
             modelBuilder.Configurations.Add(new JobConfiguration(schema));
             modelBuilder.Configurations.Add(new JobHistoryConfiguration(schema));
             modelBuilder.Configurations.Add(new LocationConfiguration(schema));
+            modelBuilder.Configurations.Add(new NlClobConfiguration(schema));
             modelBuilder.Configurations.Add(new RegionConfiguration(schema));
+            modelBuilder.Configurations.Add(new TypeBlobTableConfiguration(schema));
             modelBuilder.Configurations.Add(new TypeCharTableConfiguration(schema));
             modelBuilder.Configurations.Add(new TypeDateTableConfiguration(schema));
             modelBuilder.Configurations.Add(new TypeNumTableConfiguration(schema));
@@ -680,6 +700,253 @@ namespace TestDatabaseDataAnnotation
 
         }
 
+        public byte[] TypeBlobFunc(byte[] pBlob)
+        {
+            byte[] returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.ReturnValue };
+            var pBlobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BLOB", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.Input, Value = pBlob };
+            if (pBlobParam.Value == null)
+                pBlobParam.Value = System.DBNull.Value;
+
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.type_blob_func(:P_BLOB); end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam, pBlobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = default(byte[]);
+                    else
+                        returnValue = (byte[]) ((Oracle.ManagedDataAccess.Types.OracleBlob) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeBlobProc(byte[] pBlob, out byte[] xBlob)
+        {
+            xBlob = null;
+
+            var pBlobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BLOB", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.Input, Value = pBlob };
+            if (pBlobParam.Value == null)
+                pBlobParam.Value = System.DBNull.Value;
+
+            var xBlobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_BLOB", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_blob_proc(:P_BLOB, :X_BLOB); end;";
+					cmd.Parameters.AddRange(new[] {pBlobParam, xBlobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(xBlobParam))
+                        xBlob = default(byte[]);
+                    else
+                        xBlob = (byte[]) ((Oracle.ManagedDataAccess.Types.OracleBlob) xBlobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeBlobProcInout(ref byte[] pBlob)
+        {
+            var pBlobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BLOB", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.InputOutput, Value = pBlob };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_blob_proc_inout(:P_BLOB); end;";
+					cmd.Parameters.AddRange(new[] {pBlobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pBlobParam))
+                        pBlob = default(byte[]);
+                    else
+                        pBlob = (byte[]) ((Oracle.ManagedDataAccess.Types.OracleBlob) pBlobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeBlobProcInout2(ref byte[] pBlob)
+        {
+            var pBlobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BLOB", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.InputOutput, Value = pBlob };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_blob_proc_inout2(:P_BLOB); end;";
+					cmd.Parameters.AddRange(new[] {pBlobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pBlobParam))
+                        pBlob = default(byte[]);
+                    else
+                        pBlob = (byte[]) ((Oracle.ManagedDataAccess.Types.OracleBlob) pBlobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeBlobProcInout3(ref byte[] pBlob)
+        {
+            var pBlobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_BLOB", OracleDbType = OracleDbType.Blob, Direction = System.Data.ParameterDirection.InputOutput, Value = pBlob };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_blob_proc_inout3(:P_BLOB); end;";
+					cmd.Parameters.AddRange(new[] {pBlobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pBlobParam))
+                        pBlob = default(byte[]);
+                    else
+                        pBlob = (byte[]) ((Oracle.ManagedDataAccess.Types.OracleBlob) pBlobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
         public void TypeCharProc(string pCharcol, string pCharvaryingvar, string pCharactervar, string pCharactervaryingvar, string pNationalcharvaryvar, string pNationalcharactervaryingvar, string pNcharvar, string pNcharvaryingvar, string pNvarchar2Var, string pStringvar, string pVarcharvar, string pVarchar2Var, string pClobcol, string pNclobcol, out string xCharcol, int xCharcolCharLength, out string xCharvaryingvar, out string xCharactervar, int xCharactervarCharLength, out string xCharactervaryingvar, out string xNationalcharvaryvar, out string xNationalcharactervaryingvar, out string xNcharvar, int xNcharvarCharLength, out string xNcharvaryingvar, out string xNvarchar2Var, out string xStringvar, out string xVarcharvar, out string xVarchar2Var, out string xClobcol, out string xNclobcol)
         {
             xCharcol = null;
@@ -1001,6 +1268,253 @@ namespace TestDatabaseDataAnnotation
 
         }
 
+        public string TypeClobFunc(string pClob)
+        {
+            string returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.ReturnValue };
+            var pClobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOB", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.Input, Value = pClob };
+            if (pClobParam.Value == null)
+                pClobParam.Value = System.DBNull.Value;
+
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.type_clob_func(:P_CLOB); end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam, pClobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = default(string);
+                    else
+                        returnValue = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeClobProc(string pClob, out string xClob)
+        {
+            xClob = null;
+
+            var pClobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOB", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.Input, Value = pClob };
+            if (pClobParam.Value == null)
+                pClobParam.Value = System.DBNull.Value;
+
+            var xClobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_CLOB", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_clob_proc(:P_CLOB, :X_CLOB); end;";
+					cmd.Parameters.AddRange(new[] {pClobParam, xClobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(xClobParam))
+                        xClob = default(string);
+                    else
+                        xClob = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) xClobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeClobProcInout(ref string pClob)
+        {
+            var pClobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOB", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.InputOutput, Value = pClob };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_clob_proc_inout(:P_CLOB); end;";
+					cmd.Parameters.AddRange(new[] {pClobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pClobParam))
+                        pClob = default(string);
+                    else
+                        pClob = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) pClobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeClobProcInout2(ref string pClob)
+        {
+            var pClobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOB", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.InputOutput, Value = pClob };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_clob_proc_inout2(:P_CLOB); end;";
+					cmd.Parameters.AddRange(new[] {pClobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pClobParam))
+                        pClob = default(string);
+                    else
+                        pClob = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) pClobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeClobProcInout3(ref string pClob)
+        {
+            var pClobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_CLOB", OracleDbType = OracleDbType.Clob, Direction = System.Data.ParameterDirection.InputOutput, Value = pClob };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_clob_proc_inout3(:P_CLOB); end;";
+					cmd.Parameters.AddRange(new[] {pClobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(pClobParam))
+                        pClob = default(string);
+                    else
+                        pClob = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) pClobParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
         public void TypeDateProc(System.DateTime? pDatecol, System.DateTime? pTimestampcol, System.DateTime? pDatedefaultcol, System.DateTime? pDatedefault2Col, System.DateTime? pTimestampdefaultcol, System.DateTime? pTimestampdefault2Col, System.DateTimeOffset? pTimestamptzcol, System.DateTime? pTimestampltzzcol, decimal? pIntervalyeartomonthcol, System.TimeSpan? pIntervaldaytoseccol, out System.DateTime? xDatecol, out System.DateTime? xTimestampcol, out System.DateTime? xDatedefaultcol, out System.DateTime? xDatedefault2Col, out System.DateTime? xTimestampdefaultcol, out System.DateTime? xTimestampdefault2Col, out System.DateTimeOffset? xTimestamptzcol, out System.DateTime? xTimestampltzzcol, out decimal? xIntervalyeartomonthcol, out System.TimeSpan? xIntervaldaytoseccol)
         {
             xDatecol = null;
@@ -1186,6 +1700,112 @@ namespace TestDatabaseDataAnnotation
                         pTimestampcol = null;
                     else
                         pTimestampcol = (System.DateTime) ((Oracle.ManagedDataAccess.Types.OracleTimeStamp) pTimestampcolParam.Value).Value;
+
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public string TypeNclobFunc(string pNclob)
+        {
+            string returnValue = null;
+            var returnValueParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":returnValue", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.ReturnValue };
+            var pNclobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCLOB", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.Input, Value = pNclob };
+            if (pNclobParam.Value == null)
+                pNclobParam.Value = System.DBNull.Value;
+
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin :returnValue := efpoco.type_nclob_func(:P_NCLOB); end;";
+					cmd.Parameters.AddRange(new[] {returnValueParam, pNclobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(returnValueParam))
+                        returnValue = default(string);
+                    else
+                        returnValue = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) returnValueParam.Value).Value;
+
+            return returnValue;
+                }
+            }
+            finally
+            {
+                if (Database.Connection.State == System.Data.ConnectionState.Open)
+                {
+                    try
+                    {
+                        Database.Connection.Close();
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+            }
+
+        }
+
+        public void TypeNclobProc(string pNclob, out string xNclob)
+        {
+            xNclob = null;
+
+            var pNclobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":P_NCLOB", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.Input, Value = pNclob };
+            if (pNclobParam.Value == null)
+                pNclobParam.Value = System.DBNull.Value;
+
+            var xNclobParam = new Oracle.ManagedDataAccess.Client.OracleParameter { ParameterName = ":X_NCLOB", OracleDbType = OracleDbType.NClob, Direction = System.Data.ParameterDirection.Output };
+
+            try
+            {
+                if (Database.Connection.State != System.Data.ConnectionState.Open)
+                {
+                    Database.Connection.Open();
+                }
+
+                using (var cmd = Database.Connection.CreateCommand())
+                {
+                    var oracleCmd = (OracleCommand)cmd;
+                    oracleCmd.BindByName = true;
+                    oracleCmd.InitialLOBFetchSize = -1;
+                    oracleCmd.InitialLONGFetchSize = -1;
+					cmd.CommandType = System.Data.CommandType.Text;
+					cmd.CommandText = "begin efpoco.type_nclob_proc(:P_NCLOB, :X_NCLOB); end;";
+					cmd.Parameters.AddRange(new[] {pNclobParam, xNclobParam});
+
+					cmd.ExecuteNonQuery();
+
+                    if (IsSqlParameterNull(xNclobParam))
+                        xNclob = default(string);
+                    else
+                        xNclob = (string) ((Oracle.ManagedDataAccess.Types.OracleClob) xNclobParam.Value).Value;
 
                 }
             }
@@ -1649,7 +2269,9 @@ namespace TestDatabaseDataAnnotation
         public System.Data.Entity.DbSet<Job> Jobs { get; set; }
         public System.Data.Entity.DbSet<JobHistory> JobHistories { get; set; }
         public System.Data.Entity.DbSet<Location> Locations { get; set; }
+        public System.Data.Entity.DbSet<NlClob> NlClobs { get; set; }
         public System.Data.Entity.DbSet<Region> Regions { get; set; }
+        public System.Data.Entity.DbSet<TypeBlobTable> TypeBlobTables { get; set; }
         public System.Data.Entity.DbSet<TypeCharTable> TypeCharTables { get; set; }
         public System.Data.Entity.DbSet<TypeDateTable> TypeDateTables { get; set; }
         public System.Data.Entity.DbSet<TypeNumTable> TypeNumTables { get; set; }
@@ -1662,7 +2284,9 @@ namespace TestDatabaseDataAnnotation
             Jobs = new FakeDbSet<Job>("JobId");
             JobHistories = new FakeDbSet<JobHistory>("EmployeeId", "StartDate");
             Locations = new FakeDbSet<Location>("LocationId");
+            NlClobs = new FakeDbSet<NlClob>("Pkcol");
             Regions = new FakeDbSet<Region>("RegionId");
+            TypeBlobTables = new FakeDbSet<TypeBlobTable>("Pk");
             TypeCharTables = new FakeDbSet<TypeCharTable>("Pk");
             TypeDateTables = new FakeDbSet<TypeDateTable>("Pk");
             TypeNumTables = new FakeDbSet<TypeNumTable>("Pk");
@@ -1846,6 +2470,60 @@ namespace TestDatabaseDataAnnotation
 
         }
 
+        public byte[] TypeBlobFunc(byte[] pBlob)
+        {
+
+            byte[] returnValue = null;
+
+
+                    returnValue = default(byte[]);
+
+
+            return returnValue;
+        }
+
+        public void TypeBlobProc(byte[] pBlob, out byte[] xBlob)
+        {
+
+
+            xBlob = null;
+
+
+                    xBlob = default(byte[]);
+
+
+        }
+
+        public void TypeBlobProcInout(ref byte[] pBlob)
+        {
+
+
+
+                    pBlob = default(byte[]);
+
+
+        }
+
+        public void TypeBlobProcInout2(ref byte[] pBlob)
+        {
+
+
+
+                    pBlob = default(byte[]);
+
+
+        }
+
+        public void TypeBlobProcInout3(ref byte[] pBlob)
+        {
+
+
+
+                    pBlob = default(byte[]);
+
+
+        }
+
         public void TypeCharProc(string pCharcol, string pCharvaryingvar, string pCharactervar, string pCharactervaryingvar, string pNationalcharvaryvar, string pNationalcharactervaryingvar, string pNcharvar, string pNcharvaryingvar, string pNvarchar2Var, string pStringvar, string pVarcharvar, string pVarchar2Var, string pClobcol, string pNclobcol, out string xCharcol, int xCharcolCharLength, out string xCharvaryingvar, out string xCharactervar, int xCharactervarCharLength, out string xCharactervaryingvar, out string xNationalcharvaryvar, out string xNationalcharactervaryingvar, out string xNcharvar, int xNcharvarCharLength, out string xNcharvaryingvar, out string xNvarchar2Var, out string xStringvar, out string xVarcharvar, out string xVarchar2Var, out string xClobcol, out string xNclobcol)
         {
 
@@ -1907,6 +2585,60 @@ namespace TestDatabaseDataAnnotation
 
         }
 
+        public string TypeClobFunc(string pClob)
+        {
+
+            string returnValue = null;
+
+
+                    returnValue = default(string);
+
+
+            return returnValue;
+        }
+
+        public void TypeClobProc(string pClob, out string xClob)
+        {
+
+
+            xClob = null;
+
+
+                    xClob = default(string);
+
+
+        }
+
+        public void TypeClobProcInout(ref string pClob)
+        {
+
+
+
+                    pClob = default(string);
+
+
+        }
+
+        public void TypeClobProcInout2(ref string pClob)
+        {
+
+
+
+                    pClob = default(string);
+
+
+        }
+
+        public void TypeClobProcInout3(ref string pClob)
+        {
+
+
+
+                    pClob = default(string);
+
+
+        }
+
         public void TypeDateProc(System.DateTime? pDatecol, System.DateTime? pTimestampcol, System.DateTime? pDatedefaultcol, System.DateTime? pDatedefault2Col, System.DateTime? pTimestampdefaultcol, System.DateTime? pTimestampdefault2Col, System.DateTimeOffset? pTimestamptzcol, System.DateTime? pTimestampltzzcol, decimal? pIntervalyeartomonthcol, System.TimeSpan? pIntervaldaytoseccol, out System.DateTime? xDatecol, out System.DateTime? xTimestampcol, out System.DateTime? xDatedefaultcol, out System.DateTime? xDatedefault2Col, out System.DateTime? xTimestampdefaultcol, out System.DateTime? xTimestampdefault2Col, out System.DateTimeOffset? xTimestamptzcol, out System.DateTime? xTimestampltzzcol, out decimal? xIntervalyeartomonthcol, out System.TimeSpan? xIntervaldaytoseccol)
         {
 
@@ -1944,6 +2676,30 @@ namespace TestDatabaseDataAnnotation
 
                     pDatecol = default(System.DateTime);
                     pTimestampcol = default(System.DateTime);
+
+
+        }
+
+        public string TypeNclobFunc(string pNclob)
+        {
+
+            string returnValue = null;
+
+
+                    returnValue = default(string);
+
+
+            return returnValue;
+        }
+
+        public void TypeNclobProc(string pNclob, out string xNclob)
+        {
+
+
+            xNclob = null;
+
+
+                    xNclob = default(string);
 
 
         }
@@ -2738,18 +3494,43 @@ namespace TestDatabaseDataAnnotation
         partial void InitializePartial();
     }
 
-    // The table 'NL_CLOBS' is not usable by entity framework because it
+    // The table 'NL_BLOBS' is not usable by entity framework because it
     // does not have a primary key. It is listed here for completeness.
-    // NL_CLOBS
+    // NL_BLOBS
     [NotMapped]
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class NlBlob
+    {
+        [Column(@"B_BLOB", Order = 1, TypeName = "blob")]
+        [Display(Name = "B blob")]
+        public byte[] BBlob { get; set; } // B_BLOB
+
+        public NlBlob()
+        {
+            InitializePartial();
+        }
+
+        partial void InitializePartial();
+    }
+
+    // NL_CLOBS
+    [Table("NL_CLOBS", Schema = "EFPOCO")]
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
     public partial class NlClob
     {
-        [Column(@"C_CLOB", Order = 1, TypeName = "clob")]
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Column(@"PKCOL", Order = 1, TypeName = "number")]
+        [Index(@"SYS_C0026104", 1, IsUnique = true, IsClustered = false)]
+        [Required]
+        [Key]
+        [Display(Name = "Pkcol")]
+        public decimal Pkcol { get; set; } // PKCOL (Primary key)
+
+        [Column(@"C_CLOB", Order = 2, TypeName = "clob")]
         [Display(Name = "C clob")]
         public string CClob { get; set; } // C_CLOB
 
-        [Column(@"N_CLOB", Order = 2, TypeName = "nclob")]
+        [Column(@"N_CLOB", Order = 3, TypeName = "nclob")]
         [Display(Name = "N clob")]
         public string NClob { get; set; } // N_CLOB
 
@@ -2832,6 +3613,31 @@ namespace TestDatabaseDataAnnotation
         public Region()
         {
             CountRies = new System.Collections.Generic.List<CountRy>();
+            InitializePartial();
+        }
+
+        partial void InitializePartial();
+    }
+
+    // TYPE_BLOB_TABLE
+    [Table("TYPE_BLOB_TABLE", Schema = "EFPOCO")]
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class TypeBlobTable
+    {
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
+        [Column(@"PK", Order = 1, TypeName = "number")]
+        [Index(@"SYS_C0026103", 1, IsUnique = true, IsClustered = false)]
+        [Required]
+        [Key]
+        [Display(Name = "Pk")]
+        public long Pk { get; set; } // PK (Primary key)
+
+        [Column(@"BLOBCOL", Order = 2, TypeName = "blob")]
+        [Display(Name = "Blobcol")]
+        public byte[] Blobcol { get; set; } // BLOBCOL
+
+        public TypeBlobTable()
+        {
             InitializePartial();
         }
 
@@ -2984,7 +3790,7 @@ namespace TestDatabaseDataAnnotation
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Column(@"PK", Order = 1, TypeName = "number")]
-        [Index(@"SYS_C0026065", 1, IsUnique = true, IsClustered = false)]
+        [Index(@"SYS_C0026106", 1, IsUnique = true, IsClustered = false)]
         [Required]
         [Key]
         [Display(Name = "Pk")]
@@ -3057,18 +3863,6 @@ namespace TestDatabaseDataAnnotation
         [Column(@"INTERVALYEARTOMONTHCOL3", Order = 18, TypeName = "interval year to month")]
         [Display(Name = "Intervalyeartomonthcol 3")]
         public decimal? Intervalyeartomonthcol3 { get; set; } // INTERVALYEARTOMONTHCOL3
-
-        [Column(@"INTERVALDAYTOSECCOL", Order = 19, TypeName = "interval day to second")]
-        [Display(Name = "Intervaldaytoseccol")]
-        public System.TimeSpan? Intervaldaytoseccol { get; set; } // INTERVALDAYTOSECCOL
-
-        [Column(@"INTERVALDAYTOSECCOL2", Order = 20, TypeName = "interval day to second")]
-        [Display(Name = "Intervaldaytoseccol 2")]
-        public System.TimeSpan? Intervaldaytoseccol2 { get; set; } // INTERVALDAYTOSECCOL2
-
-        [Column(@"INTERVALDAYTOSECCOL3", Order = 21, TypeName = "interval day to second")]
-        [Display(Name = "Intervaldaytoseccol 3")]
-        public System.TimeSpan? Intervaldaytoseccol3 { get; set; } // INTERVALDAYTOSECCOL3
 
         public TypeDateTable()
         {
@@ -3467,6 +4261,24 @@ namespace TestDatabaseDataAnnotation
         partial void InitializePartial();
     }
 
+    // NL_CLOBS
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class NlClobConfiguration : System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<NlClob>
+    {
+        public NlClobConfiguration()
+            : this("EFPOCO")
+        {
+        }
+
+        public NlClobConfiguration(string schema)
+        {
+            Property(x => x.CClob).IsOptional();
+            Property(x => x.NClob).IsOptional();
+            InitializePartial();
+        }
+        partial void InitializePartial();
+    }
+
     // REGIONS
     [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
     public partial class RegionConfiguration : System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<Region>
@@ -3479,6 +4291,23 @@ namespace TestDatabaseDataAnnotation
         public RegionConfiguration(string schema)
         {
             Property(x => x.RegionName).IsOptional().IsUnicode(false);
+            InitializePartial();
+        }
+        partial void InitializePartial();
+    }
+
+    // TYPE_BLOB_TABLE
+    [System.CodeDom.Compiler.GeneratedCode("EF.Reverse.POCO.Generator", "2.36.1.0")]
+    public partial class TypeBlobTableConfiguration : System.Data.Entity.ModelConfiguration.EntityTypeConfiguration<TypeBlobTable>
+    {
+        public TypeBlobTableConfiguration()
+            : this("EFPOCO")
+        {
+        }
+
+        public TypeBlobTableConfiguration(string schema)
+        {
+            Property(x => x.Blobcol).IsOptional();
             InitializePartial();
         }
         partial void InitializePartial();
@@ -3548,9 +4377,6 @@ namespace TestDatabaseDataAnnotation
             Property(x => x.Intervalyeartomonthcol).IsOptional().HasPrecision(2,0);
             Property(x => x.Intervalyeartomonthcol2).IsOptional();
             Property(x => x.Intervalyeartomonthcol3).IsOptional().HasPrecision(9,0);
-            Property(x => x.Intervaldaytoseccol).IsOptional();
-            Property(x => x.Intervaldaytoseccol2).IsOptional();
-            Property(x => x.Intervaldaytoseccol3).IsOptional();
             InitializePartial();
         }
         partial void InitializePartial();
