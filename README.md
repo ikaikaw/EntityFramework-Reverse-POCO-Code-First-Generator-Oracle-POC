@@ -16,7 +16,30 @@ Summary of changes:
   * Changed method GetPropertyType() to receive additional params (precision, scale, etc)
   * Changed TableSQL() and IndexSQL() methods to query the Oracle dictionary
 
-* TODO:
-  * Handle table default values 
-  * Handle PL/SQL procedures, functions and packages
-  * Add more unit tests 
+* TODO
+  * StoreGeneratedPattern
+    * oracle 12.2 identity ?
+    * oracle <12.2 poor man's trigger ?
+		
+  * Tables and Views
+    * Reevaluate LONG
+    * Filter tables containing columns of type "interval day to second"
+
+  * PL/SQL
+    * add "Setting" for PL/SQL string parameter size: 32767
+    * create comments for each parameter of SP describing it's oracle type (example, System.DateTime vs DATE VS TIMESTAMP)
+    * Reevaluate LONG
+    * Exclude the data types interval day to second for tables/views because it does not seem to be supported by Oracle.ManagedDataAccess
+
+		
+  * Notes and Limitations
+    * Tables and Views
+      * data type "interval day to second" is not supported by Oracle.ManagedDataAccess.Client
+    * PL/SQL
+      * Ditched Database.ExecuteSqlCommand in favor of OracleCommand because LOB parameters would be inaccessible (since the connection is closed after Database.ExecuteSqlCommand is executed)
+      * Output Parameters of type Lob and Clob higher than 3999 and NClob higher than 1999 are not working with Oracle.ManagedDataAccess.Client (they do work with the old Oracle.DataAccessClient)
+      * System.DateTime To Oracle DATE only has second precision
+      * System.DateTime To Oracle TIMESTAMP only has 6 fractional places
+        * Expected: 63660970567.0488750
+        * But was:  63660970567.0488748
+  
