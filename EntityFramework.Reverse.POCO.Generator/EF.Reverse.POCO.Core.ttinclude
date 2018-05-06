@@ -2549,6 +2549,7 @@ OPTION (QUERYTRACEON 9481)";
 				case "date":
 					sysType = "Date";
 					break;
+				case "float":
 				case "number":
 					sysType = "Decimal";
 					break;

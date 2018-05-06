@@ -1,4 +1,5 @@
 
+
 ## EntityFramework Reverse POCO Code First Generator Oracle POC
 
 This a proof-of-concept of modifying the excellent EntityFramework Reverse POCO Code First Generator to target Oracle databases. The purpose is to test and tweak the necessary oracle dictionary queries as well identify potential additional changes on the original templates themselves.
@@ -41,4 +42,4 @@ Notes and Limitations
   * System.DateTime To Oracle TIMESTAMP only has 6 fractional places
     * Expected: 63660970567.0488750
     * But was:  63660970567.0488748
-  
+  * Output Parameters of type PositiveN and NaturalN are not working: they are throwing "ORA-06502: PL/SQL: numeric or value error"

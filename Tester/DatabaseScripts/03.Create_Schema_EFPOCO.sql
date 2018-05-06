@@ -94,13 +94,13 @@ create or replace procedure type_num_proc (
     x_intvar                out int,
     x_integervar            out integer,
     x_naturalvar            out natural,
-    x_naturalnvar            out naturaln,
+    --x_naturalnvar            out naturaln, -- out naturaln is not working
     x_numberfvar            out number,
     x_numericvar            out numeric,
     x_plsvar                out pls_integer,
     x_binaryvar             out binary_integer,
     x_positivevar            out positive,
-    x_positivenvar            out positiven,
+    --x_positivenvar            out positiven, -- out positiven is not working
     x_realvar                out real,
     x_signtypevar            out signtype,
     x_smallintvar            out smallint,
@@ -118,13 +118,13 @@ begin
     x_intvar := p_intvar;
     x_integervar := p_integervar;
     x_naturalvar := p_naturalvar;
-    x_naturalnvar := p_naturalnvar;
+    --x_naturalnvar := p_naturalnvar;
     x_numberfvar := p_numberfvar;
     x_numericvar := p_numericvar;
     x_plsvar := p_plsvar;
     x_binaryvar := p_binaryvar;
     x_positivevar := p_positivevar;
-    x_positivenvar := p_positivenvar;
+    --x_positivenvar := p_positivenvar;
     x_realvar := p_realvar;
     x_signtypevar := p_signtypevar;
     x_smallintvar := p_smallintvar;
@@ -181,6 +181,24 @@ end;
 /
 
 
+create or replace procedure type_naturaln_proc (
+    p_naturalnvar            in naturaln,
+    x_naturalnvar            out naturaln   
+) 
+is
+begin
+    x_naturalnvar := p_naturalnvar;
+end;
+/
+
+create or replace procedure type_naturaln_proc2 (
+    p_naturalnvar            in naturaln   
+) 
+is
+begin
+    null;
+end;
+/
 
 --drop table type_char_table;
 create table type_char_table (
@@ -312,6 +330,27 @@ begin
     --x_long := --p_long || '_XXX_';
     p_clobcol := p_clobcol || '_XXX_';
     p_nclobcol := p_nclobcol || '_XXX_';
+end;
+/
+
+
+create or replace procedure type_clob_proc ( 
+    p_clob                         in clob,
+    x_clob                      out clob
+)
+is
+begin        
+    x_clob := p_clob;
+end;
+/
+
+create or replace procedure type_nclob_proc ( 
+    p_nclob                         in nclob,
+    x_nclob                      out nclob
+)
+is
+begin        
+    x_nclob := p_nclob;
 end;
 /
 
