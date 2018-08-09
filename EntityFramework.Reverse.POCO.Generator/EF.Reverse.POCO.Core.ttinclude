@@ -130,6 +130,11 @@
         public static bool AutomaticMigrationDataLossAllowed;
         public static List<EnumDefinition> EnumDefinitions = new List<EnumDefinition>();
         public static Dictionary<string, string> ColumnNameToDataAnnotation;
+
+		// Oracle specific stuff
+		public static string UseTriggerAsPseudoIdentityForPKSuffix;
+		// End Oracle specific stuff
+
         public static bool IncludeCodeGeneratedAttribute;
         public static Tables Tables;
         public static List<StoredProcedure> StoredProcs;
@@ -1572,7 +1577,7 @@
 
     private class SqlServerSchemaReader : SchemaReader
     {
-        private const string TableSQL = @"
+        private static string TableSQL = @"
 select 
 t.owner as ""SchemaName"",
 t.table_name as ""TableName"",
@@ -1582,7 +1587,7 @@ c.column_name as ""ColumnName"",
 decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
 c.data_type ,
 case 
-	when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
+    when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
     when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
     when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
     when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
@@ -1603,7 +1608,7 @@ cast(nvl(case
     when c.data_type LIKE 'TIMESTAMP%' or c.data_type ='DATE' then 0     
     else c.data_scale
 end,0) as int) as ""Scale"",
-0 as ""IsIdentity"",
+nvl2(at.trigger_name, decode(pk.column_name, null, 0, 1), 0) as ""IsIdentity"",
 0 as ""IsStoreGenerated"",
 decode(pk.column_name, null, 0, 1) as ""PrimaryKey"",
 nvl(pk.position, 0) as ""PrimaryKeyOrdinal"",
@@ -1611,6 +1616,7 @@ decode(fk.column_name, null, 0, 1) as ""IsForeignKey""
 from 
 all_tables t 
 inner join all_tab_cols c on c.owner = t.owner and c.table_name = t.table_name
+{IDENTITY_TRIGGER}
 left join (
     select 
     pk.owner,
@@ -1661,7 +1667,7 @@ c.column_name as ""ColumnName"",
 decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
 c.data_type ,
 case
-	when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
+    when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
     when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
     when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
     when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
@@ -1719,7 +1725,7 @@ and cr.constraint_type in('R')
 ";
 
             private const string StoredProcedureSQL = @"
-			select
+select
 p.owner as ""SPECIFIC_SCHEMA"", /* NL: not sure if we should map a SQLServer ""schema"" to an Oracle ""owner"" */ 
 decode(p.procedure_name, null, p.object_name, p.object_name || '.' || p.procedure_name) as ""SPECIFIC_NAME"", 
 decode(a.position, 0, 'FUNCTION', 'PROCEDURE') as ""ROUTINE_TYPE"",
@@ -1803,12 +1809,13 @@ OPTION (QUERYTRACEON 9481)";
             if(Cmd == null)
                 return result;
 
+			var identityTriggerClause = "left join all_triggers at on at.owner = t.owner and at.trigger_type = 'BEFORE EACH ROW' and at.triggering_event = 'INSERT'" + (Settings.UseTriggerAsPseudoIdentityForPKSuffix != null ? " and at.table_name = t.table_name and at.trigger_name = t.table_name || '" + Settings.UseTriggerAsPseudoIdentityForPKSuffix + "' " : " 1=2 ");
             if(Settings.IncludeSynonyms)
-                Cmd.CommandText = TableSQL;
+                Cmd.CommandText = TableSQL.Replace("{IDENTITY_TRIGGER}", identityTriggerClause);
             else
-                Cmd.CommandText = TableSQL;
+                Cmd.CommandText = TableSQL.Replace("{IDENTITY_TRIGGER}", identityTriggerClause);
 
-            Cmd.CommandTimeout = Settings.CommandTimeout;
+			Cmd.CommandTimeout = Settings.CommandTimeout;
 
             using(var rdr = Cmd.ExecuteReader())
             {

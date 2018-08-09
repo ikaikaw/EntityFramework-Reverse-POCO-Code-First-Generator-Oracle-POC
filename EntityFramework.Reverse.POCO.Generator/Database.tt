@@ -82,6 +82,8 @@
         { "password",        "DataType(DataType.Password)" },
         { "username",        "DataType(DataType.Text)" }
     };
+	// Oracle specific stuff
+	Settings.UseTriggerAsPseudoIdentityForPKSuffix = "_TRG"; // if this is set to a non-nullable value, we will search for corresponding trigger	with the table name plus the suffix. if we find it we will set the PK as DatabaseGeneratedOption.Identity
 
     // Migrations *************************************************************************************************************************
     Settings.MigrationConfigurationFileName = ""; // null or empty to not create migrations
