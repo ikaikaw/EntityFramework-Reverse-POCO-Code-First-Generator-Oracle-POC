@@ -1758,6 +1758,7 @@ from
         inner join all_arguments a on a.object_id = p.object_id and a.subprogram_id = p.subprogram_id
         where 1=1
 		and p.object_type in ('PROCEDURE', 'FUNCTION', 'PACKAGE')
+		and p.pipelined = 'NO'
         and p.subprogram_id != 0
     ) v
 ) v
