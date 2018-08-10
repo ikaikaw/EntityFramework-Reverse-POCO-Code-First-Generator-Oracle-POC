@@ -1,5 +1,3 @@
-
-
 ## EntityFramework Reverse POCO Code First Generator Oracle POC
 
 This a proof-of-concept of modifying the excellent EntityFramework Reverse POCO Code First Generator to target Oracle databases. The purpose is to test and tweak the necessary oracle dictionary queries as well identify potential additional changes on the original templates themselves.
@@ -16,11 +14,11 @@ Summary of changes:
   * Changed casts to Converts
   * Changed method GetPropertyType() to receive additional params (precision, scale, etc)
   * Changed TableSQL() and IndexSQL() methods to query the Oracle dictionary
+  * ...
 
 TODO
 * StoreGeneratedPattern
-  * oracle 12.2 identity ?
-  * oracle <12.2 poor man's trigger ?
+  * oracle 12.2 identity
 		
 * Tables and Views
   * Reevaluate LONG
