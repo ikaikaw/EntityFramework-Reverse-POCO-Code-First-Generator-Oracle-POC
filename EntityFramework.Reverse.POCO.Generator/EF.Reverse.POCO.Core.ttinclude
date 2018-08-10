@@ -1726,25 +1726,41 @@ and cr.constraint_type in('R')
 
             private const string StoredProcedureSQL = @"
 select
-p.owner as ""SPECIFIC_SCHEMA"", /* NL: not sure if we should map a SQLServer ""schema"" to an Oracle ""owner"" */ 
-decode(p.procedure_name, null, p.object_name, p.object_name || '.' || p.procedure_name) as ""SPECIFIC_NAME"", 
-decode(a.position, 0, 'FUNCTION', 'PROCEDURE') as ""ROUTINE_TYPE"",
-decode(a.sequence, 0, null, a.position) as ""ORDINAL_POSITION"",
-decode(a.position, 0, 'RETURN', a.in_out) as ""PARAMETER_MODE"",
-a.argument_name as ""PARAMETER_NAME"",
-a.data_type as ""DATA_TYPE"",
---a.pls_type as ""PLS_TYPE"",
-cast(0 as number(1)) as ""CHARACTER_MAXIMUM_LENGTH"",
-cast(0 as number(1)) as ""NUMERIC_PRECISION"",
-cast(0 as number(1)) as ""NUMERIC_SCALE"",
-cast(0 as number(1)) as ""DATETIME_PRECISION"",
-null as ""USER_DEFINED_TYPE""
-from 
-all_procedures p 
-inner join all_arguments a on a.object_id = p.object_id and a.subprogram_id = p.subprogram_id
-where 1=1
-and p.subprogram_id != 0
-order by p.object_name, p.subprogram_id, a.sequence
+v.*,
+decode(max_schema_desambiguate, schema_desambiguate, 0, 1) as ""NEEDS_SCHEMA_DISAMBIGUATE"" 
+from
+(
+    select
+    v.*,
+    max(v.schema_desambiguate) over (partition by v.""SPECIFIC_NAME"") as max_schema_desambiguate
+    from
+    (
+        select
+        p.owner as ""SPECIFIC_SCHEMA"", /* NL: not sure if we should map a SQLServer ""schema"" to an Oracle ""owner"" */ 
+        decode(p.procedure_name, null, p.object_name, p.object_name || '.' || p.procedure_name) as ""SPECIFIC_NAME"", 
+        decode(a.position, 0, 'FUNCTION', 'PROCEDURE') as ""ROUTINE_TYPE"",
+        decode(a.sequence, 0, null, a.position) as ""ORDINAL_POSITION"",
+        decode(a.position, 0, 'RETURN', a.in_out) as ""PARAMETER_MODE"",
+        a.argument_name as ""PARAMETER_NAME"",
+        a.data_type as ""DATA_TYPE"",
+        --a.pls_type as ""PLS_TYPE"",
+        cast(0 as number(1)) as ""CHARACTER_MAXIMUM_LENGTH"",
+        cast(0 as number(1)) as ""NUMERIC_PRECISION"",
+        cast(0 as number(1)) as ""NUMERIC_SCALE"",
+        cast(0 as number(1)) as ""DATETIME_PRECISION"",
+        null as ""USER_DEFINED_TYPE"",
+        NVL(p.overload, 0) as ""OVERLOAD"",
+        p.subprogram_id,
+        a.sequence,
+        dense_rank() over (partition by decode(p.procedure_name, null, p.object_name, p.object_name || '.' || p.procedure_name) order by p.owner asc) as schema_desambiguate
+        from 
+        all_procedures p 
+        inner join all_arguments a on a.object_id = p.object_id and a.subprogram_id = p.subprogram_id
+        where 1=1
+        and p.subprogram_id != 0
+    ) v
+) v
+order by v.""SPECIFIC_SCHEMA"", v.""SPECIFIC_NAME"", v.subprogram_id, v.sequence
 ";
 
         private const string IndexSQL = @"
