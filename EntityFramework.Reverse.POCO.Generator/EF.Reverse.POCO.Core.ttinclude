@@ -2105,10 +2105,18 @@ OPTION (QUERYTRACEON 9481)";
                     if(Settings.SchemaFilterExclude != null && Settings.SchemaFilterExclude.IsMatch(schema))
                         continue;
 
+					var overload = Convert.ToInt32(rdr["OVERLOAD"]);
+					var needsSchemaDisambiguate = Convert.ToBoolean(rdr["NEEDS_SCHEMA_DISAMBIGUATE"]);
+
                     string spName = rdr["SPECIFIC_NAME"].ToString().Trim();
-                    var fullname = schema + "." + spName;
 					var sanitizedSpName = spName.Replace(".", "_");
-                    if(Settings.StoredProcedureFilterExclude != null && (Settings.StoredProcedureFilterExclude.IsMatch(spName) || Settings.StoredProcedureFilterExclude.IsMatch(fullname)))
+                    var fullname = schema + "." + spName + (overload != 0 ? "_" + overload : ""); // append suffix _1, _2 to overloaded methods, for differentiation
+
+					if(overload != 0) {
+						 sanitizedSpName += "_" + overload;
+					}
+
+					if(Settings.StoredProcedureFilterExclude != null && (Settings.StoredProcedureFilterExclude.IsMatch(spName) || Settings.StoredProcedureFilterExclude.IsMatch(fullname)))
                         continue;
 
                     if (lastSp != fullname || sp == null)
@@ -2122,7 +2130,7 @@ OPTION (QUERYTRACEON 9481)";
                             Schema = schema
                         };
                         sp.NameHumanCase = CleanUp(sp.NameHumanCase);
-                        if((string.Compare(schema, "dbo", StringComparison.OrdinalIgnoreCase) != 0) && Settings.PrependSchemaName)
+                        if(((string.Compare(schema, "dbo", StringComparison.OrdinalIgnoreCase) != 0) && Settings.PrependSchemaName) || needsSchemaDisambiguate)
                             sp.NameHumanCase = schema + "_" + sp.NameHumanCase;
 
                         sp.NameHumanCase = Settings.StoredProcedureRename(sp);
