@@ -731,7 +731,7 @@
                 var reader = new SqlServerSchemaReader(conn, factory) { Outer = this };
                 var tables = reader.ReadSchema();
                 var fkList = reader.ReadForeignKeys();
-                reader.IdentifyForeignKeys(fkList, tables);
+				reader.IdentifyForeignKeys(fkList, tables);
 
                 foreach (var t in tables)
                 {
@@ -1579,148 +1579,181 @@
     {
         private static string TableSQL = @"
 select 
-t.owner as ""SchemaName"",
-t.table_name as ""TableName"",
-'BASE_TABLE' as ""TableType"",
-nvl(c.column_id, 0) as ""Ordinal"",
-c.column_name as ""ColumnName"",
-decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
-c.data_type ,
-case 
-    when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
-    when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
-    when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
-    when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
-    when c.data_type like 'TIMESTAMP%' then 'TIMESTAMP'
-    else c.data_type 
-end as ""TypeName"",
-cast(nvl(case 
-    when c.data_type in ('CHAR', 'NCHAR', 'VARCHAR2', 'NVARCHAR2') then c.data_length
-    else 0
-end, 0) as int) as ""MaxLength"",
-cast(nvl(c.data_precision, 0) as int) as ""Precision"",
-c.data_default as ""Default"",
-cast(nvl(case
-    when c.data_type LIKE 'TIMESTAMP%' then c.data_scale
-    else 0
-end,0) as int) as ""DateTimePrecision"",
-cast(nvl(case
-    when c.data_type LIKE 'TIMESTAMP%' or c.data_type ='DATE' then 0     
-    else c.data_scale
-end,0) as int) as ""Scale"",
-nvl2(at.trigger_name, decode(pk.column_name, null, 0, 1), 0) as ""IsIdentity"",
-0 as ""IsStoreGenerated"",
-decode(pk.column_name, null, 0, 1) as ""PrimaryKey"",
-nvl(pk.position, 0) as ""PrimaryKeyOrdinal"",
-decode(fk.column_name, null, 0, 1) as ""IsForeignKey""
-from 
-all_tables t 
-inner join all_tab_cols c on c.owner = t.owner and c.table_name = t.table_name
-{IDENTITY_TRIGGER}
-left join (
-    select 
-    pk.owner,
-    pk.constraint_name,
-    pk.table_name,
-    pkc.column_name,
-    pkc.position
-    from 
-    all_constraints pk
-    inner join all_cons_columns pkc on pkc.owner = pk.owner and pkc.constraint_name = pk.constraint_name and pkc.table_name = pk.table_name
-    where 1=1
-    and constraint_type = 'P'
-) pk on 1=1
-    and pk.owner = c.owner 
-    and pk.owner = t.owner
-    and pk.table_name = c.table_name 
-    and pk.table_name = t.table_name
-    and pk.column_name = c.column_name
-left join (
-    select 
-    fk.owner,
-    fk.constraint_name,
-    fk.table_name,
-    fkc.column_name,
-    fkc.position
-    from 
-    all_constraints fk
-    inner join all_cons_columns fkc on fkc.owner = fk.owner and fkc.constraint_name = fk.constraint_name and fkc.table_name = fk.table_name
-    where 1=1
-    and constraint_type = 'R'
-) fk on 1=1
-    and fk.owner = c.owner 
-    and fk.owner = t.owner
-    and fk.table_name = c.table_name 
-    and fk.table_name = t.table_name
-    and fk.column_name = c.column_name
+v.*
+from
+(
+	select 
+	t.owner as ""SchemaName"",
+	t.table_name as ""TableName"",
+	'BASE_TABLE' as ""TableType"",
+	nvl(c.column_id, 0) as ""Ordinal"",
+	c.column_name as ""ColumnName"",
+	decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
+	c.data_type ,
+	case 
+		when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
+		when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
+		when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
+		when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
+		when c.data_type like 'TIMESTAMP%' then 'TIMESTAMP'
+		else c.data_type 
+	end as ""TypeName"",
+	cast(nvl(case 
+		when c.data_type in ('CHAR', 'NCHAR', 'VARCHAR2', 'NVARCHAR2') then c.data_length
+		else 0
+	end, 0) as int) as ""MaxLength"",
+	cast(nvl(c.data_precision, 0) as int) as ""Precision"",
+	c.data_default as ""Default"",
+	cast(nvl(case
+		when c.data_type LIKE 'TIMESTAMP%' then c.data_scale
+		else 0
+	end,0) as int) as ""DateTimePrecision"",
+	cast(nvl(case
+		when c.data_type LIKE 'TIMESTAMP%' or c.data_type ='DATE' then 0     
+		else c.data_scale
+	end,0) as int) as ""Scale"",
+	nvl2(at.trigger_name, decode(pk.column_name, null, 0, 1), 0) as ""IsIdentity"",
+	0 as ""IsStoreGenerated"",
+	decode(pk.column_name, null, 0, 1) as ""PrimaryKey"",
+	nvl(pk.position, 0) as ""PrimaryKeyOrdinal"",
+	decode(fk.column_name, null, 0, 1) as ""IsForeignKey""
+	from
+	all_tables t 
+	inner join all_tab_columns c on c.owner = t.owner and c.table_name = t.table_name
+	{IDENTITY_TRIGGER}
+	left join (
+		select 
+		pk.owner,
+		pk.constraint_name,
+		pk.table_name,
+		pkc.column_name,
+		pkc.position
+		from 
+		all_constraints pk
+		inner join all_cons_columns pkc on pkc.owner = pk.owner and pkc.constraint_name = pk.constraint_name and pkc.table_name = pk.table_name
+		where 1=1
+		and constraint_type = 'P'
+	) pk on 1=1
+		and pk.owner = c.owner 
+		and pk.owner = t.owner
+		and pk.table_name = c.table_name 
+		and pk.table_name = t.table_name
+		and pk.column_name = c.column_name
+	left join (
+		select 
+		fk.owner,
+		fk.constraint_name,
+		fk.table_name,
+		fkc.column_name,
+		fkc.position
+		from 
+		all_constraints fk
+		inner join all_cons_columns fkc on fkc.owner = fk.owner and fkc.constraint_name = fk.constraint_name and fkc.table_name = fk.table_name
+		where 1=1
+		and constraint_type = 'R'
+	) fk on 1=1
+		and fk.owner = c.owner 
+		and fk.owner = t.owner
+		and fk.table_name = c.table_name 
+		and fk.table_name = t.table_name
+		and fk.column_name = c.column_name
+	where 1=1
+	and c.data_type not in (
+		'LONG'
+	)
+	union all
+	select 
+	t.owner as ""SchemaName"",
+	t.view_name as ""TableName"",
+	'VIEW' as ""TableType"",
+	nvl(c.column_id, 0) as ""Ordinal"",
+	c.column_name as ""ColumnName"",
+	decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
+	c.data_type ,
+	case
+		when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
+		when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
+		when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
+		when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
+		when c.data_type like 'TIMESTAMP%' then 'TIMESTAMP'
+		else c.data_type 
+	end as ""TypeName"",
+	cast(nvl(case 
+		when c.data_type in ('CHAR', 'NCHAR', 'VARCHAR2', 'NVARCHAR2') then c.data_length
+		else 0
+	end, 0) as int) as ""MaxLength"",
+	cast(nvl(c.data_precision, 0) as int) as ""Precision"",
+	c.data_default as ""Default"",
+	cast(nvl(case
+		when c.data_type LIKE 'TIMESTAMP%' then c.data_scale     
+		else 0
+	end,0) as int) as ""DateTimePrecision"",
+	cast(nvl(case
+		when c.data_type LIKE 'TIMESTAMP%' or c.data_type ='DATE' then 0     
+		else c.data_scale
+	end,0) as int) as ""Scale"",
+	0 as ""IsIdentity"",
+	0 as ""IsStoreGenerated"",
+	0 as ""PrimaryKey"",
+	0 as ""PrimaryKeyOrdinal"",
+	0 as ""IsForeignKey""
+	from 
+	all_views t
+	inner join all_tab_columns c on c.owner = t.owner and c.table_name = t.view_name
+	where 1=1
+	and c.data_type not in (
+		'LONG'
+	)
+) v
 where 1=1
-and c.data_type not in (
-    'LONG'
-)
-union all
-select 
-t.owner as ""SchemaName"",
-t.view_name as ""TableName"",
-'VIEW' as ""TableType"",
-nvl(c.column_id, 0) as ""Ordinal"",
-c.column_name as ""ColumnName"",
-decode(c.nullable, 'Y', 1, 0) as ""IsNullable"",
-c.data_type ,
-case
-    when c.data_type like 'INTERVAL YEAR% TO MONTH' then 'INTERVAL YEAR TO MONTH'
-    when c.data_type like 'INTERVAL DAY% TO SECOND%' then 'INTERVAL DAY TO SECOND'
-    when c.data_type like 'TIMESTAMP% WITH LOCAL TIME ZONE' then 'TIMESTAMP WITH LOCAL TIME ZONE'
-    when c.data_type like 'TIMESTAMP% WITH TIME ZONE' then 'TIMESTAMP WITH TIME ZONE'
-    when c.data_type like 'TIMESTAMP%' then 'TIMESTAMP'
-    else c.data_type 
-end as ""TypeName"",
-cast(nvl(case 
-    when c.data_type in ('CHAR', 'NCHAR', 'VARCHAR2', 'NVARCHAR2') then c.data_length
-    else 0
-end, 0) as int) as ""MaxLength"",
-cast(nvl(c.data_precision, 0) as int) as ""Precision"",
-c.data_default as ""Default"",
-cast(nvl(case
-    when c.data_type LIKE 'TIMESTAMP%' then c.data_scale     
-    else 0
-end,0) as int) as ""DateTimePrecision"",
-cast(nvl(case
-    when c.data_type LIKE 'TIMESTAMP%' or c.data_type ='DATE' then 0     
-    else c.data_scale
-end,0) as int) as ""Scale"",
-0 as ""IsIdentity"",
-0 as ""IsStoreGenerated"",
-0 as ""PrimaryKey"",
-0 as ""PrimaryKeyOrdinal"",
-0 as ""IsForeignKey""
-from 
-all_views t
-inner join all_tab_cols c on c.owner = t.owner and c.table_name = t.view_name
-where 1=1
-and c.data_type not in (
-    'LONG'
-)
+{SCHEMA_FILTER_EXCLUDE}
+{SCHEMA_FILTER_INCLUDE}
+{TABLE_FILTER_INCLUDE}
+{TABLE_FILTER_EXCLUDE}
+{COLUMN_FILTER_EXCLUDE}
 ";
 
             private const string ForeignKeySQL = @"
+with primary_key as (
+    select 
+    pk.constraint_name,
+    pk.table_name,
+    pkc.column_name,
+    pk.owner,
+    pkc.position
+    from 
+    all_tables t 
+    inner join all_constraints pk on pk.owner = t.owner and pk.table_name = t.table_name
+    inner join all_cons_columns pkc on pkc.owner = pk.owner and pkc.constraint_name = pk.constraint_name and pkc.table_name = pk.table_name
+    where 1=1
+    {SCHEMA_FILTER_EXCLUDE}
+	{SCHEMA_FILTER_INCLUDE}
+	{TABLE_FILTER_INCLUDE}
+	{TABLE_FILTER_EXCLUDE}
+    and pk.constraint_type = 'P'
+)
 select
 cr.table_name as ""FK_Table"",
 ccr.column_name as ""FK_Column"",
 pk.table_name as ""PK_Table"",
-pkc.column_name as ""PK_Column"",
+pk.column_name as ""PK_Column"",
 cr.constraint_name as ""Constraint_Name"",
 cr.owner as ""fkSchema"",
 pk.owner as ""pkSchema"",
-pkc.column_name as ""primarykey"",
+pk.column_name as ""primarykey"",
 ccr.position as ""ORDINAL_POSITION"",
 decode(cr.delete_rule, 'CASCADE', 1, 0) as ""CascadeOnDelete"",
 decode(cr.status, 'ENABLED', 0, 1) as ""IsNotEnforced""
 from 
-all_constraints cr
+all_tables t
+inner join all_constraints cr on cr.owner = t.owner and cr.table_name = t.table_name
 inner join all_cons_columns ccr on ccr.owner = cr.owner and ccr.constraint_name = cr.constraint_name and ccr.table_name = cr.table_name
-inner join all_constraints pk on pk.owner = cr.r_owner and PK.CONSTRAINT_NAME = cr.r_constraint_name 
-inner join all_cons_columns pkc on pkc.owner = pk.owner and pkc.constraint_name = pk.constraint_name and pkc.table_name = pk.table_name and pkc.position = ccr.position
+inner join primary_key pk on pk.owner = cr.r_owner and PK.CONSTRAINT_NAME = cr.r_constraint_name and ccr.position = pk.position  
 where 1=1
+{SCHEMA_FILTER_EXCLUDE}
+{SCHEMA_FILTER_INCLUDE}
+{TABLE_FILTER_INCLUDE}
+{TABLE_FILTER_EXCLUDE}
 and cr.constraint_type in('R')
 ";
 
@@ -1757,6 +1790,10 @@ from
         all_procedures p 
         inner join all_arguments a on a.object_id = p.object_id and a.subprogram_id = p.subprogram_id
         where 1=1
+		{SCHEMA_FILTER_EXCLUDE}
+		{SCHEMA_FILTER_INCLUDE}
+		{PROC_FILTER_INCLUDE}
+		{PROC_FILTER_EXCLUDE}
 		and p.object_type in ('PROCEDURE', 'FUNCTION', 'PACKAGE')
 		and p.pipelined = 'NO'
         and p.subprogram_id != 0
@@ -1766,41 +1803,51 @@ order by v.""SPECIFIC_SCHEMA"", v.""SPECIFIC_NAME"", v.subprogram_id, v.sequence
 ";
 
         private const string IndexSQL = @"
-		select
-i.table_owner as ""TableSchema"",
-i.table_name as ""TableName"",
-i.index_name as ""IndexName"",
-ic.column_position as ""KeyOrdinal"",
-ic.column_name as ""ColumnName"",
-decode(i.uniqueness, 'UNIQUE', 1, 0) as ""IsUnique"",
-decode(c.constraint_type, 'P', 1, 0) as ""IsPrimaryKey"",
-decode(c.constraint_type, 'U', 1, 0) as ""IsUniqueConstraint"",
-0 as ""IsClustered"",
-sum(1) over (partition by i.table_owner, i.table_name, i.index_name order by i.table_owner) as ""ColumnCount"" 
+select
+v.*
 from 
-all_indexes i
-inner join all_ind_columns ic on 1=1
-    and ic.index_owner = i.owner
-    and ic.index_name = i.index_name
-    and ic.table_owner = i.table_owner
-    and ic.table_owner = i.table_owner
-left join (
-    select 
-    c.owner,
-    c.constraint_type,
-    c.constraint_name,
-    c.table_name,
-    cc.column_name,
-    cc.position
-    from 
-    all_constraints c
-    inner join all_cons_columns cc on cc.owner = c.owner and cc.constraint_name = c.constraint_name and cc.table_name = c.table_name
-    where 1=1
-    and constraint_type in('P', 'U')
-) c on 1=1
-    and c.owner = i.owner     
-    and c.table_name = i.table_name
-    and c.constraint_name = i.index_name 
+(
+	select
+	i.table_owner as ""TableSchema"",
+	i.table_name as ""TableName"",
+	i.index_name as ""IndexName"",
+	ic.column_position as ""KeyOrdinal"",
+	ic.column_name as ""ColumnName"",
+	decode(i.uniqueness, 'UNIQUE', 1, 0) as ""IsUnique"",
+	decode(c.constraint_type, 'P', 1, 0) as ""IsPrimaryKey"",
+	decode(c.constraint_type, 'U', 1, 0) as ""IsUniqueConstraint"",
+	0 as ""IsClustered"",
+	sum(1) over (partition by i.table_owner, i.table_name, i.index_name order by i.table_owner) as ""ColumnCount"" 
+	from 
+	all_indexes i
+	inner join all_ind_columns ic on 1=1
+		and ic.index_owner = i.owner
+		and ic.index_name = i.index_name
+		and ic.table_owner = i.table_owner
+		and ic.table_owner = i.table_owner
+	left join (
+		select 
+		c.owner,
+		c.constraint_type,
+		c.constraint_name,
+		c.table_name,
+		cc.column_name,
+		cc.position
+		from 
+		all_constraints c
+		inner join all_cons_columns cc on cc.owner = c.owner and cc.constraint_name = c.constraint_name and cc.table_name = c.table_name
+		where 1=1
+		and constraint_type in('P', 'U')
+	) c on 1=1
+		and c.owner = i.owner     
+		and c.table_name = i.table_name
+		and c.constraint_name = i.index_name 
+) v
+where 1=1
+{SCHEMA_FILTER_EXCLUDE}
+{SCHEMA_FILTER_INCLUDE}
+{TABLE_FILTER_INCLUDE}
+{TABLE_FILTER_EXCLUDE}
 ";
 
         public SqlServerSchemaReader(DbConnection connection, DbProviderFactory factory)
@@ -1827,11 +1874,18 @@ OPTION (QUERYTRACEON 9481)";
             if(Cmd == null)
                 return result;
 
-			var identityTriggerClause = "left join all_triggers at on at.owner = t.owner and at.trigger_type = 'BEFORE EACH ROW' and at.triggering_event = 'INSERT'" + (Settings.UseTriggerAsPseudoIdentityForPKSuffix != null ? " and at.table_name = t.table_name and at.trigger_name = t.table_name || '" + Settings.UseTriggerAsPseudoIdentityForPKSuffix + "' " : " 1=2 ");
-            if(Settings.IncludeSynonyms)
-                Cmd.CommandText = TableSQL.Replace("{IDENTITY_TRIGGER}", identityTriggerClause);
-            else
-                Cmd.CommandText = TableSQL.Replace("{IDENTITY_TRIGGER}", identityTriggerClause);
+			var identityTriggerClause = "left join all_triggers at on at.owner = t.owner and at.trigger_type = 'BEFORE EACH ROW' and at.triggering_event = 'INSERT'" + (Settings.UseTriggerAsPseudoIdentityForPKSuffix != null ? " and at.table_name = t.table_name and at.trigger_name = t.table_name || '" + Settings.UseTriggerAsPseudoIdentityForPKSuffix + "' " : " and 1=2 ");
+            
+			Cmd.CommandText = TableSQL
+			.Replace("{IDENTITY_TRIGGER}", identityTriggerClause)
+			.Replace("{SCHEMA_FILTER_EXCLUDE}", Settings.SchemaFilterExclude != null ? @"and not regexp_like(v.""SchemaName"", '" + Settings.SchemaFilterExclude.ToString() + "')" : "")
+			.Replace("{SCHEMA_FILTER_INCLUDE}", Settings.SchemaFilterInclude != null ? @"and regexp_like(v.""SchemaName"", '" + Settings.SchemaFilterInclude.ToString() + "')" : "")
+			.Replace("{TABLE_FILTER_EXCLUDE}", Settings.TableFilterExclude != null ? @"and not regexp_like(v.""TableName"", '" + Settings.TableFilterExclude.ToString() + "')" : "")
+			.Replace("{TABLE_FILTER_INCLUDE}", Settings.TableFilterInclude != null ? @"and regexp_like(v.""TableName"", '" + Settings.TableFilterInclude.ToString() + "')" : "")
+			.Replace("{COLUMN_FILTER_EXCLUDE}", Settings.ColumnFilterExclude != null ? @"and not regexp_like(v.""ColumnName"", '" + Settings.ColumnFilterExclude.ToString() + "')" : "")
+			;
+			
+			WriteLine("// TablesSQL: " + Cmd.CommandText);
 
 			Cmd.CommandTimeout = Settings.CommandTimeout;
 
@@ -1935,12 +1989,20 @@ OPTION (QUERYTRACEON 9481)";
             if(Cmd == null)
                 return fkList;
 
-            Cmd.CommandText = ForeignKeySQL;
+			var sql = ForeignKeySQL
+			.Replace("{SCHEMA_FILTER_EXCLUDE}", Settings.SchemaFilterExclude != null ? @"and not regexp_like(t.owner, '" + Settings.SchemaFilterExclude.ToString() + "')" : "")
+			.Replace("{SCHEMA_FILTER_INCLUDE}", Settings.SchemaFilterInclude != null ? @"and regexp_like(t.owner, '" + Settings.SchemaFilterInclude.ToString() + "')" : "")
+			.Replace("{TABLE_FILTER_EXCLUDE}", Settings.TableFilterExclude != null ? @"and not regexp_like(t.table_name, '" + Settings.TableFilterExclude.ToString() + "')" : "")
+			.Replace("{TABLE_FILTER_INCLUDE}", Settings.TableFilterInclude != null ? @"and regexp_like(t.table_name, '" + Settings.TableFilterInclude.ToString() + "')" : "");
+
+            Cmd.CommandText = sql;
 
             if (Settings.IncludeSynonyms)
-                Cmd.CommandText = ForeignKeySQL;
+                Cmd.CommandText = sql;
 
-            Cmd.CommandTimeout = Settings.CommandTimeout;
+			WriteLine("// ForeignKeySQL: " + Cmd.CommandText);
+
+			Cmd.CommandTimeout = Settings.CommandTimeout;
 
             using(DbDataReader rdr = Cmd.ExecuteReader())
             {
@@ -1982,8 +2044,16 @@ OPTION (QUERYTRACEON 9481)";
             if (Cmd.GetType().Name == "SqlCeCommand")
                 return;
 
-            Cmd.CommandText = IndexSQL + IncludeQueryTraceOn9481();
-            Cmd.CommandTimeout = Settings.CommandTimeout;
+            Cmd.CommandText = IndexSQL
+			.Replace("{SCHEMA_FILTER_EXCLUDE}", Settings.SchemaFilterExclude != null ? @"and not regexp_like(v.""TableSchema"", '" + Settings.SchemaFilterExclude.ToString() + "')" : "")
+			.Replace("{SCHEMA_FILTER_INCLUDE}", Settings.SchemaFilterInclude != null ? @"and regexp_like(v.""TableSchema"", '" + Settings.SchemaFilterInclude.ToString() + "')" : "")
+			.Replace("{TABLE_FILTER_EXCLUDE}", Settings.TableFilterExclude != null ? @"and not regexp_like(v.""TableName"", '" + Settings.TableFilterExclude.ToString() + "')" : "")
+			.Replace("{TABLE_FILTER_INCLUDE}", Settings.TableFilterInclude != null ? @"and regexp_like(v.""TableName"", '" + Settings.TableFilterInclude.ToString() + "')" : "")
+			+ IncludeQueryTraceOn9481();
+
+			WriteLine("// IndexSQL: " + Cmd.CommandText);
+
+			Cmd.CommandTimeout = Settings.CommandTimeout;
 
             var list = new List<Index>();
             using (DbDataReader rdr = Cmd.ExecuteReader())
@@ -2091,8 +2161,14 @@ OPTION (QUERYTRACEON 9481)";
                 return result;
 
             
-            Cmd.CommandText = StoredProcedureSQL;
+            Cmd.CommandText = StoredProcedureSQL
+			.Replace("{SCHEMA_FILTER_EXCLUDE}", Settings.SchemaFilterExclude != null ? @"and not regexp_like(p.owner, '" + Settings.SchemaFilterExclude.ToString() + "')" : "")
+			.Replace("{SCHEMA_FILTER_INCLUDE}", Settings.SchemaFilterInclude != null ? @"and regexp_like(p.owner, '" + Settings.SchemaFilterInclude.ToString() + "')" : "")
+			.Replace("{PROC_FILTER_EXCLUDE}", Settings.StoredProcedureFilterExclude != null ? @"and (not regexp_like(p.object_name, '" + Settings.StoredProcedureFilterExclude.ToString() + "') and not regexp_like(p.procedure_name, '" + Settings.StoredProcedureFilterExclude.ToString() + "'))" : "")
+			.Replace("{PROC_FILTER_INCLUDE}", Settings.StoredProcedureFilterInclude != null ? @"and (regexp_like(p.object_name, '" + Settings.StoredProcedureFilterInclude.ToString() + "') or regexp_like(p.procedure_name, '" + Settings.StoredProcedureFilterInclude.ToString() + "'))" : "")
+			;
 
+			WriteLine("// StoredProcedureSQL: " + Cmd.CommandText);
             Cmd.CommandTimeout = Settings.CommandTimeout;
 
             using(DbDataReader rdr = Cmd.ExecuteReader())
